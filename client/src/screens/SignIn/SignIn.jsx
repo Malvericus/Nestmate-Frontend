@@ -40,7 +40,7 @@ function SignIn() {
         // Store token and userId in localStorage
         localStorage.setItem('token', data.token);  // Store token for authorization
         localStorage.setItem('userId', data.id);    // Store userId for any further use
-
+        console.log(localStorage.getItem('token'))
         // Redirect to dashboard
         navigate("/dashboard");
       } else {
