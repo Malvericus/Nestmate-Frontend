@@ -17,14 +17,18 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const userId = localStorage.getItem("userId"); // Get userId from localStorage or other means
         const response = await fetch(
-          `https://nestmatebackend.ktandon2004.workers.dev/rooms/owner/${userId}`, 
+          `https://nestmatebackend.ktandon2004.workers.dev/rooms/owner`, // No query parameters
           {
-            method: 'GET',
+            method: 'POST', // Send as POST request with a body
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('authToken')}`, // Add Authorization token here
-            }
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`, // Add Authorization token
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              page: '1', // Send page and limit as part of the body
+              limit: '10',
+            }),
           }
         );
         const data = await response.json();
