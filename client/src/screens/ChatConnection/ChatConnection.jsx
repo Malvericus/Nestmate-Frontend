@@ -8,6 +8,7 @@ import BotMessage from './components/BotMessage';
 import UserMessage from './components/UserMessage';
 import "./Chatbot.css";
 
+
 // Import Google Generative AI Client
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
