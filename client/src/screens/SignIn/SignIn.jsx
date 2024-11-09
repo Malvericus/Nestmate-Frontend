@@ -37,7 +37,11 @@ function SignIn() {
       const data = await response.json();
 
       if (response.status === 200) {
-        localStorage.setItem('userId', data.token);
+        // Store token and userId in localStorage
+        localStorage.setItem('token', data.token);  // Store token for authorization
+        localStorage.setItem('userId', data.id);    // Store userId for any further use
+
+        // Redirect to dashboard
         navigate("/dashboard");
       } else {
         setError(`${data.error} (Status: ${response.status})`);

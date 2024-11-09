@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Person from "../../assets/PersonIcon.svg";
-import { signup } from "../../authServices/authServices";
 import Lottie from "react-lottie";
-import loadingAnimation from "../../assets/loadingAnimation.json";
+import loadingAnimation from "../../assets/loadingAnimation.json"; 
 
 const defaultOptions = {
   loop: true,
@@ -62,8 +61,11 @@ function SignUp() {
       console.log("Response status:", response.status);
       console.log("Response data:", data);
       if (response.status === 201) {
-        // Store token and redirect immediately
-        localStorage.setItem("userId", data.token);
+        // Store token and userId in localStorage
+        localStorage.setItem("token", data.token); // Store token for authorization
+        localStorage.setItem("userId", data.id);   // Store userId for user-specific needs
+
+        // Redirect to dashboard
         navigate("/dashboard");
         console.log("Navigation called");
       } else if (response.status === 400 && data.errors) {
