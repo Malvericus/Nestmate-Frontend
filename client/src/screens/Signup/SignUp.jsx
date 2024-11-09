@@ -5,7 +5,6 @@ import { signup } from "../../authServices/authServices";
 import Lottie from "react-lottie";
 import loadingAnimation from "../../assets/loadingAnimation.json";
 
-// Lottie animation options
 const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -15,9 +14,8 @@ const defaultOptions = {
     }
 };
 
-const navigate = useNavigate();
-
 function SignUp() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -33,15 +31,12 @@ function SignUp() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        // Convert the DOB to ISO-8601 DateTime format when the date changes
         if (name === 'dob') {
             const date = new Date(value);
             setFormData({ ...formData, dob: date.toISOString() });
         } else {
             setFormData({ ...formData, [name]: value });
         }
-
         setValidationErrors({ ...validationErrors, [name]: '' });
     };
 
@@ -52,26 +47,30 @@ function SignUp() {
         setValidationErrors({});
 
         try {
-            const data = await signup(formData);
+            const response = await fetch("https://nestmatebackend.ktandon2004.workers.dev/auth/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
 
-            if (data.error) {
-                setError(data.error);
+            if (response.status === 200) {
+                localStorage.setItem("userId", data.token);
+                navigate("/dashboard");
+            } else if (data.error) {
+                setError(`${response.status}: ${data.error}`);
             } else if (data.errors) {
                 const newValidationErrors = {};
-
-                // Parse validation errors from server
-                for (const [key, value] of Object.entries(data)) {
-                    if (Array.isArray(value.path) && value.path.length > 0) {
-                        newValidationErrors[value.path[0]] = value.message;
-                    }
+                for (const [key, value] of Object.entries(data.errors)) {
+                    newValidationErrors[value.path[0]] = value.message;
                 }
                 setValidationErrors(newValidationErrors);
-            } else {
-                alert('Sign-up successful!');
-                navigate("../UserProfile/UserProfile");
             }
         } catch (err) {
-            setError('Network error occurred');
+            setError("Network error occurred");
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -152,12 +151,7 @@ function SignUp() {
                     
                     <button type="submit" className="login-button phone-login" disabled={isLoading}>
                         <div className="icon-circle">
-                            <img
-                                src={Person}
-                                alt="Person Icon"
-                                width="24"
-                                height="24"
-                            />
+                            <img src={Person} alt="Person Icon" width="24" height="24" />
                         </div>
                         <div className="text-container">Sign Up</div>
                     </button>
