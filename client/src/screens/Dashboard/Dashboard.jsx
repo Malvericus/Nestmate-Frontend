@@ -8,7 +8,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const fetchRooms = async () => {
-    const token = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
 
     if (!token) {
       setError("Unauthorized: No token found.");
