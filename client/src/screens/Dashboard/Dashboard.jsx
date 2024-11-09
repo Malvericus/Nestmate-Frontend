@@ -20,7 +20,7 @@ const Dashboard = () => {
 
   const fetchRooms = async () => {
     const token = localStorage.getItem("token");
-    console.log("Token:", token);  // Check if token is retrieved correctly
+    console.log("Token:", token);  // Verify token retrieval
 
     if (!token) {
       setError("Unauthorized: No token found");
@@ -28,9 +28,11 @@ const Dashboard = () => {
       return;
     }
 
+    const userId = localStorage.getItem("userId"); 
+
     try {
       const response = await fetch(
-        "https://nestmatebackend.ktandon2004.workers.dev/rooms/owner",
+        `https://nestmatebackend.ktandon2004.workers.dev/rooms/owner/${userId}`,
         {
           method: "GET",
           headers: {
@@ -50,7 +52,7 @@ const Dashboard = () => {
       setRooms(data.rooms);
     } catch (err) {
       setError("Network error occurred");
-      console.error("Fetch error:", err);  // Log any network errors
+      console.error("Fetch error:", err);
     } finally {
       setLoading(false);
     }
