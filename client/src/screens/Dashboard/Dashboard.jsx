@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [rooms, setRooms] = useState([]);
@@ -16,19 +16,18 @@ const Dashboard = () => {
       return;
     }
 
+    const page = 1;
+    const limit = 10;
     try {
       const response = await fetch(
-        "https://nestmatebackend.ktandon2004.workers.dev/rooms/getByOwner",
+        `https://nestmatebackend.ktandon2004.workers.dev/rooms/getByOwner?userId=${userId}&page=${page}&limit=${limit}`,
         {
-          method: "POST",
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            page: 1,
-            limit: 10,
-          }),
+        
         }
       );
 
