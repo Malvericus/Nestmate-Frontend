@@ -13,8 +13,13 @@ const Dashboard = () => {
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
-    navigate(tab == 'search' ? '/matches' : '/dashboard')
+    navigate(tab == 'search' ? '/matches' : '/dashboard');
   }
+
+  // Function to handle redirect to the signup page
+  const handleSignupRedirect = () => {
+    window.location.href = "https://nestmatebackend.ktandon2004.workers.dev/auth/signup";
+  };
 
   return (
     <div className="dashboard-container">
@@ -70,53 +75,11 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Space 2 */}
-      <div className="post-card">
-        <div className="card-image">
-          <img
-            src={Room1}
-            alt="Room"
-          />
-          <span className="badge">Techie</span>
-        </div>
-        <div className="card-content">
-          <h2>Semi Furnished All Amenities</h2>
-          <p>Bella Cassa Phase 2 B</p>
-          <p className="sharing">SHARING</p>
-          <p className="user-details">
-          Engineering Bachelor, Sophomore at Symbiosis Institute of Technology
-          </p>
-        </div>
-        <div className="card-actions">
-          <ThumbsUp className="action-button" size={20} color="#5c8aec" />
-          <MessageCircle className="action-button" size={20} color="#5c8aec" />
-          <MoreHorizontal className="action-button" size={20} color="#5c8aec" />
-        </div>
-      </div>
-
-      {/* Space 3 */}
-      <div className="post-card">
-        <div className="card-image">
-          <img
-            src={Room1}
-            alt="Room"
-          />
-          <span className="badge">Techie</span>
-          
-        </div>
-        <div className="card-content">
-          <h2>Semi Furnished All Amenities</h2>
-          <p>Bella Cassa Phase 2 B</p>
-          <p className="sharing">SHARING</p>
-          <p className="user-details">
-          Engineering Bachelor, Sophomore at Symbiosis Institute of Technology
-          </p>
-        </div>
-        <div className="card-actions">
-          <ThumbsUp className="action-button" size={20} color="#5c8aec" />
-          <MessageCircle className="action-button" size={20} color="#5c8aec" />
-          <MoreHorizontal className="action-button" size={20} color="#5c8aec" />
-        </div>
+      {/* Button for Signup Redirect */}
+      <div className="redirect-button-container">
+        <button onClick={handleSignupRedirect} className="signup-redirect-button">
+          Go to Signup
+        </button>
       </div>
 
       <footer className="bottom-nav">
