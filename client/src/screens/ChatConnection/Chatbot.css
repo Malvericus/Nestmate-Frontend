@@ -1,0 +1,154 @@
+.chatbot-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 30px;
+    justify-content: center;
+    padding-bottom: 10%;
+}
+
+/* Side-Vertical Navbar */
+.content-section {
+    display: flex;
+     /* Leave space for the sidebar */
+    padding: 20px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px; 
+    padding-top: 20px;
+    background: #ffffff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    margin-top: 10%;
+    margin-right: 3%;
+    height: 400px; /* Sidebar height (adjust as needed) */
+    border-radius: 25px;
+    position: sticky;
+
+}
+
+.nav-button {
+    background: none;
+    border: none;
+    margin: 15px 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.nav-button:hover {
+    background-color: lightblue;
+}
+
+/* Style for the main chatbot card */
+.chatbot-card {
+    background-color: #FFF6EA;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 50px;
+    width: 80%;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Chatbot Screen */
+.chatbot {
+    font-family: monospace;
+    border-radius: 10px;
+    box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.15);
+    background: #f5f8fb;
+    text-align: center;
+    display: flex;
+    flex-flow: column;
+    width: 500px;
+    overflow: hidden;
+  }
+  
+  .header {
+    padding: 20px;
+    font-family: monospace;
+    text-align: center;
+    border-radius: 20px;
+    color: rgb(255, 255, 255);
+    max-height: 58px;
+    font-size: 20px;
+    font-weight: bold;
+    background-color: #002f50;
+  }
+  
+  .messages {
+    width: 100%;
+    height: 400px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0px;
+  }
+  
+  .message-container {
+    width: 100%;
+  }
+  
+  .bot-message {
+    font-family: monospace;
+    float: left;
+    padding: 15px 20px;
+    margin: 5px;
+    border-radius: 20px 20px 20px 1px;
+    background: #00aaa5;
+    color: white;
+    min-width: 40px;
+  }
+  
+  .user-message {
+    font-family: monospace;
+    float: right;
+    padding: 15px 10px;
+    margin: 10px;
+    border-radius: 20px 20px 1px 20px;
+    background: #cccccc;
+    color: black;
+  }
+  
+  .input {
+    position: relative;
+  }
+  
+  .input > form > input[type="text"] {
+    font-family: monospace;
+    font-size: 16px;
+    border: 0;
+    border-radius: 0;
+    border-radius: 10px;
+    border-top: 1px solid #eee;
+    box-shadow: none;
+    box-sizing: border-box;
+    opacity: 1;
+    outline: none;
+    padding: 16px 52px 16px 10px;
+    width: 100%;
+  }
+  
+  .input > form > input:focus {
+    outline: none;
+  }
+  
+  .input > form > button {
+    background-color: transparent;
+    border: 0;
+    border-bottom-right-radius: 10px;
+    box-shadow: none;
+    cursor: pointer;
+    fill: #4a4a4a;
+    opacity: 1;
+    outline: none;
+    padding: 14px 16px 12px 16px;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+  
