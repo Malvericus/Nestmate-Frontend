@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Person from "../../assets/PersonIcon.svg";
-import { signin } from "../../authServices/authServices";
 import Lottie from "react-lottie";
 import loadingAnimation from "../../assets/loadingAnimation.json"; 
 
-// Lottie animation from App.jsx used here 
 const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -16,7 +14,6 @@ const defaultOptions = {
 };
 
 function SignIn() {
-  
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,13 +26,21 @@ function SignIn() {
     setError('');
 
     try {
-      const data = await signin({ email, password });
+      const response = await fetch("http://127.0.0.1:8787/auth/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-      if (data.error) {
-        setError(data.error);
-      } else {
-        localStorage.setItem('token', data.token); // Save JWT token
+      const data = await response.json();
+
+      if (response.status === 200) {
+        localStorage.setItem('userId', data.token);
         navigate("/dashboard");
+      } else {
+        setError(`${data.error} (Status: ${response.status})`);
       }
     } catch (err) {
       setError('Network error occurred');
