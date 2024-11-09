@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Afacad:ital,wght@0,400..700;1,400..700&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.welcome-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.background-blur {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /*background-image: url('/path-to-your-background-image.jpg'); !* Replace with your background image *!*/
+    background-size: cover;
+    background-position: center;
+    filter: blur(8px);
+    z-index: 0;
+}
+
+.center-container {
+    position: relative;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    z-index: 1; /* Ensures it's above the blurred background */
+}
+
+.icon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px;
+}
+
+.center-icon {
+    width: 60%;
+    height: 60%;
+}
+
+.welcome-text {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.login-button {
+    display: flex;                    /* Use flexbox */
+    justify-content: space-between;   /* Space between icon and text */
+    align-items: center;              /* Center items vertically */
+    width: 100%;
+    padding: 5px;                    /* Button padding */
+    margin: 10px 0;
+    border-radius: 50px;
+    font-size: 1em;
+    cursor: pointer;
+    border: none;
+    font-family: 'Afacud', Arial, sans-serif;
+    font-weight: bold;
+}
+
+.text-container {
+    flex-grow: 1;                    /* Allow text to grow and take space */
+    text-align: center;              /* Center the text */
+}
+
+.google-icon-container {
+    display: inline-flex;
+    align-items: center;              /* Align icon vertically */
+    justify-content: center;
+    margin-left: 8px;                /* Spacing between text and icon */
+}
+
+
+.icon-circle {
+    display: inline-flex;
+    align-items: center;              /* Align icon vertically */
+    justify-content: center;
+    padding: 8px;                    /* Padding for the icon */
+    border-radius: 50%;
+    background-color: #ffffff;       /* Adjust background color as needed */
+    margin-left: 8px;                /* Spacing between text and icon */
+}
+
+.phone-login {
+    background-color: #18465F;
+    color: #fff;
+}
+
+.google-login {
+    background-color: #40BAFB;
+    color: #18465F;
+    border: 1px solid #ddd;
+}
+.signup-text {
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.signup-link {
+    color: #40BAFB;
+    text-decoration: none;
+}
+
+.signup-link:hover {
+    text-decoration: underline;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+}
+

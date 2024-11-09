@@ -1,0 +1,170 @@
+.add-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    justify-content: center;
+    padding-bottom: 10%;
+}
+
+/* Header */
+.add-header {
+    display: flex;
+    justify-content: center;
+    /* Center the navbar horizontally */
+    padding: 10px 0;
+    /* Space around the header */
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
+.header-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 1000px;
+    max-width: 1200px;
+    padding: 16px 24px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 40px;
+    /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.header-navbar img.logo {
+    width: 60px;
+    /* Logo size */
+    height: auto;
+}
+
+.header-navbar h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #334155;
+}
+
+.profile-icons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    /* Space between profile picture and notification icon */
+}
+
+.profile-picture {
+    cursor: pointer;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border-color: #5c8aec;
+    object-fit: fill;
+}
+
+.notification-icon {
+    cursor: pointer;
+}
+
+/* Input for Form tiles */
+.input-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    padding: 20px;
+    max-width: 70%;
+}
+
+.tile {
+    display: flex;
+    flex-direction: column;
+    font-family: "Poppins", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    padding: 16px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.upload-box {
+    width: 50%;
+    text-align: center;
+    padding: 30px;
+    position: relative;
+    height: 180px;
+}
+
+.upload-box label {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.uploaded-images-preview {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.uploaded-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+}
+
+.title-tile,
+.desc-tile,
+.amenities-tile {
+    width: 70%;
+}
+
+.small-tile {
+    margin-left: 25px;
+    margin-right: 25px;
+    width: 30%;
+}
+
+.tile label {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.tile input, .tile textarea, .tile select {
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 14px;
+    color: #333;
+    background-color: #f0f0f0;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 500px;
+    position: fixed;
+    bottom: 16px;
+    background: #ffffff;
+    border-radius: 25px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+}
+
+.nav-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 15px;
+    transition: background-color 0.3s;
+}
+
+.nav-button:hover {
+    background-color: lightblue;
+}
+
+.nav-button svg {
+    transition: color 0.3s;
+}
