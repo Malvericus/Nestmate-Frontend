@@ -25,10 +25,6 @@ const Dashboard = () => {
               'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add Authorization token
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              page: '1', // Send page and limit as part of the body
-              limit: '10',
-            }),
           }
         );
         const data = await response.json();
