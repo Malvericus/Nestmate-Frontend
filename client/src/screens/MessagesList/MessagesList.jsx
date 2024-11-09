@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Person from "../../assets/PersonIcon.svg";
 import HomeIcon from "../../assets/HomeIcon.svg";
 import { Bell, Home, Compass, PlusCircle, Users, MessageSquare } from 'lucide-react';
-import axios from 'axios';
 import "./Messages.css";
 
 const Messages = () => {
@@ -16,16 +15,20 @@ const Messages = () => {
     
     const token = localStorage.getItem("token");  // Assuming token is stored in localStorage
 
-    // Fetch all matches (you can change this according to how you get the match data)
+    // Fetch all matches
     useEffect(() => {
         const fetchMatches = async () => {
             try {
-                const response = await axios.get('https://nestmatebackend.ktandon2004.workers.dev/matches/', {
+                const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/matches/', {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setMatches(response.data.matches);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch matches");
+                }
+                const data = await response.json();
+                setMatches(data.matches);
             } catch (error) {
                 console.error("Error fetching matches:", error);
             }
@@ -36,12 +39,16 @@ const Messages = () => {
     // Fetch chat messages for selected match
     const fetchChatMessages = async (matchId) => {
         try {
-            const response = await axios.get(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, {
+            const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            setMessages(response.data.messages);
+            if (!response.ok) {
+                throw new Error("Failed to fetch chat messages");
+            }
+            const data = await response.json();
+            setMessages(data.messages);
         } catch (error) {
             console.error("Error fetching chat messages:", error);
         }
@@ -58,10 +65,19 @@ const Messages = () => {
         if (input.trim()) {
             const matchId = selectedUser?.matchId;  // Assuming you get matchId from the selected user
             try {
-                await axios.post(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, 
-                    { content: input },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ content: input }),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to send message");
+                }
+
                 // Update messages after sending
                 setMessages([...messages, { content: input, senderId: "me", timestamp: new Date().toLocaleTimeString() }]);
                 setInput("");
