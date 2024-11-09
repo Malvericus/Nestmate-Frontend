@@ -45,7 +45,7 @@ function SignUp() {
         setIsLoading(true);
         setError('');
         setValidationErrors({});
-
+    
         try {
             const response = await fetch("https://nestmatebackend.ktandon2004.workers.dev/auth/signup", {
                 method: "POST",
@@ -56,10 +56,15 @@ function SignUp() {
             });
             
             const data = await response.json();
-
+    
             if (response.status === 200) {
-                localStorage.setItem("userId", data.token);
-                navigate("/dashboard");
+                // Check if token is present in the response
+                if (data.token) {
+                    localStorage.setItem("userId", data.token);
+                    navigate("/dashboard"); // Redirect after token is saved
+                } else {
+                    setError("No token received");
+                }
             } else if (data.error) {
                 setError(`${response.status}: ${data.error}`);
             } else if (data.errors) {
@@ -76,7 +81,7 @@ function SignUp() {
             setIsLoading(false);
         }
     };
-
+    
     return (
         <div className="welcome-screen">
             <div className="center-container">
