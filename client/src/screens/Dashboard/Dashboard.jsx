@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [rooms, setRooms] = useState([]);
@@ -8,7 +8,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const fetchRooms = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("userId");
 
     if (!token) {
       setError("Unauthorized: No token found.");
@@ -16,18 +16,19 @@ const Dashboard = () => {
       return;
     }
 
-    const page = 1;
-    const limit = 10;
     try {
       const response = await fetch(
-        `https://nestmatebackend.ktandon2004.workers.dev/rooms/`,
+        "https://nestmatebackend.ktandon2004.workers.dev/rooms/",
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        
+          body: JSON.stringify({
+            page: 1,
+            limit: 10,
+          }),
         }
       );
 
