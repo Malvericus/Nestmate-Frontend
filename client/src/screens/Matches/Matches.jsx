@@ -7,7 +7,7 @@ import "./Matches.css";
 
 const Matches = () => {
     const [activeTab, setActiveTab] = useState('search');
-    const [selectedMatch, setSelectedMatch] = useState(null); // State to manage selected match for modal
+    const [selectedMatch, setSelectedMatch] = useState(null); 
     const navigate = useNavigate();
 
     const handleTabClick = (tab) => {

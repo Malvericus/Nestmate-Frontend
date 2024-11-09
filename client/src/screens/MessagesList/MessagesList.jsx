@@ -1,34 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Person from "../../assets/PersonIcon.svg";
 import HomeIcon from "../../assets/HomeIcon.svg";
 import { Bell, Home, Compass, PlusCircle, Users, MessageSquare } from 'lucide-react';
+import axios from 'axios';
 import "./Messages.css";
 
 const Messages = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
+    const [matches, setMatches] = useState([]);
     
     const navigate = useNavigate();
     
-    const users = [
-        { id: 1, name: 'John Doe', status: 'Available' },
-        { id: 2, name: 'Jane Smith', status: 'Booked' },
-    ];
+    const token = localStorage.getItem("token");  // Assuming token is stored in localStorage
 
-    const handleUserClick = (user) => {
-        setSelectedUser(user);
-        setMessages([
-            { text: `Hello ${user.name}, what's up?`, sender: 'them', timestamp: '4:04 PM' },
-            { text: 'Hey, same as usual, thank you. And you?', sender: 'me', timestamp: '11:43 AM' },
-        ]);
+    // Fetch all matches (you can change this according to how you get the match data)
+    useEffect(() => {
+        const fetchMatches = async () => {
+            try {
+                const response = await axios.get('https://nestmatebackend.ktandon2004.workers.dev/matches/', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setMatches(response.data.matches);
+            } catch (error) {
+                console.error("Error fetching matches:", error);
+            }
+        };
+        fetchMatches();
+    }, [token]);
+
+    // Fetch chat messages for selected match
+    const fetchChatMessages = async (matchId) => {
+        try {
+            const response = await axios.get(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setMessages(response.data.messages);
+        } catch (error) {
+            console.error("Error fetching chat messages:", error);
+        }
     };
 
-    const handleSendMessage = () => {
+    // Handle user click to view chat messages
+    const handleUserClick = async (user, matchId) => {
+        setSelectedUser(user);
+        await fetchChatMessages(matchId);
+    };
+
+    // Send new message
+    const handleSendMessage = async () => {
         if (input.trim()) {
-            setMessages([...messages, { text: input, sender: 'me', timestamp: new Date().toLocaleTimeString() }]);
-            setInput("");
+            const matchId = selectedUser?.matchId;  // Assuming you get matchId from the selected user
+            try {
+                await axios.post(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, 
+                    { content: input },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                // Update messages after sending
+                setMessages([...messages, { content: input, senderId: "me", timestamp: new Date().toLocaleTimeString() }]);
+                setInput("");
+            } catch (error) {
+                console.error("Error sending message:", error);
+            }
         }
     };
 
@@ -68,15 +107,15 @@ const Messages = () => {
 
                 <div className="chat-card">
                     <div className="user-list">
-                        {users.map((user) => (
+                        {matches.map((match) => (
                             <div
-                                key={user.id}
-                                className={`user-card ${selectedUser && selectedUser.id === user.id ? 'selected' : ''}`}
-                                onClick={() => handleUserClick(user)}
+                                key={match.id}
+                                className={`user-card ${selectedUser && selectedUser.id === match.otherUser.id ? 'selected' : ''}`}
+                                onClick={() => handleUserClick(match.otherUser, match.id)}
                             >
                                 <div className="user-details">
-                                    <h4>{user.name}</h4>
-                                    <p>{user.status}</p>
+                                    <h4>{match.otherUser.firstName} {match.otherUser.lastName}</h4>
+                                    <p>Active</p>
                                 </div>
                             </div>
                         ))}
@@ -85,11 +124,11 @@ const Messages = () => {
                     <div className="chat-screen">
                         {selectedUser ? (
                             <>
-                                <div className="chat-header">{selectedUser.name}</div>
+                                <div className="chat-header">{selectedUser.firstName} {selectedUser.lastName}</div>
                                 <div className="chat-messages">
                                     {messages.map((msg, index) => (
-                                        <div key={index} className={`chat-bubble ${msg.sender === 'me' ? 'my-message' : 'their-message'}`}>
-                                            <p>{msg.text}</p>
+                                        <div key={index} className={`chat-bubble ${msg.senderId === "me" ? 'my-message' : 'their-message'}`}>
+                                            <p>{msg.content}</p>
                                             <span className="timestamp">{msg.timestamp}</span>
                                         </div>
                                     ))}
