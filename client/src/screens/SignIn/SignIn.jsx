@@ -26,7 +26,7 @@ function SignIn() {
     setError('');
 
     try {
-      const response = await fetch("https://server.nestmate.workers.dev/auth/signin", {
+      const response = await fetch("https://nestmatebackend.ktandon2004.workers.dev/auth/signin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
