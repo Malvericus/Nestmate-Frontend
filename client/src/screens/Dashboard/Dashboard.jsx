@@ -13,12 +13,12 @@ const Dashboard = () => {
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
-    navigate(tab == 'search' ? '/matches' : '/dashboard');
+    navigate(tab === 'search' ? '/matches' : '/dashboard'); // navigate to search or dashboard
   }
 
-  // Function to handle redirect to the signup page
+  // Function to handle redirect to the signup page (external link)
   const handleSignupRedirect = () => {
-    window.location.href = "https://nestmatebackend.ktandon2004.workers.dev/auth/signup";
+    window.location.href = "https://nestmatebackend.ktandon2004.workers.dev/auth/signup"; // external link
   };
 
   return (
@@ -38,8 +38,8 @@ const Dashboard = () => {
 
       <div className="dashboard-tabs">
         <button
-            className={`tab-button ${activeTab === 'share' ? 'active' : ''}`}
-            onClick={() => handleTabClick('share')}
+          className={`tab-button ${activeTab === 'share' ? 'active' : ''}`}
+          onClick={() => handleTabClick('share')}
         >
           Share your space
         </button>
