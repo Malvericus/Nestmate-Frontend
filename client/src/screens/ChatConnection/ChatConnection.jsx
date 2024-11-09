@@ -13,7 +13,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const API_KEY = "AIzaSyBmTr1Zdz6uPbBYkZAUqXruFeyJ0mlJy7w";
 const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "Nestmate-Assistant" });
+const model = genAI.getGenerativeModel({ model: "tunedModels/nestmateassistant-kfjyqmeqrlzr" });
 
 const API = {
   GetChatbotResponse: async (message) => {
