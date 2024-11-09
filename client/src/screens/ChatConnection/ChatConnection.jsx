@@ -25,7 +25,7 @@ const API = {
       return result.response.text(); // Returning the chatbot response
     } catch (error) {
       console.error("Error fetching chatbot response:", error);
-      return "Sorry, I couldn't process that.";
+      return "Sorry, I couldn't process that."+error;
     }
   }
 };
