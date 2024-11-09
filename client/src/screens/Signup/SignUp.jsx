@@ -61,7 +61,7 @@ function SignUp() {
       const data = await response.json();
       console.log("Response status:", response.status);
       console.log("Response data:", data);
-      if (response.status === 200) {
+      if (response.status === 201) {
         // Store token and redirect immediately
         localStorage.setItem("userId", data.token);
         navigate("/dashboard");
