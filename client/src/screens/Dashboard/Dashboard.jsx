@@ -7,38 +7,40 @@ import HomeIcon from "../../assets/HomeIcon.svg";
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('share');
   const [rooms, setRooms] = useState([]);
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Fetch rooms when the component mounts
   useEffect(() => {
     const fetchRooms = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Unauthorized: No token found");
+        return;
+      }
+
       try {
         const response = await fetch(
-          `https://nestmatebackend.ktandon2004.workers.dev/rooms/`, // No query parameters
+          "https://nestmatebackend.ktandon2004.workers.dev/rooms/owner",
           {
-            method: 'GET', // Send as POST request with a body
+            method: "GET",
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add Authorization token
-              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
             },
           }
         );
-        const data = await response.json();
 
-        if (response.ok) {
-          setRooms(data.rooms || []); // Set rooms if found, else empty array
-        } else {
-          setError(`Error: ${data.error || 'Failed to fetch rooms'} (Status: ${response.status})`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          setError(`Error ${response.status}: ${errorData.error || 'Failed to fetch rooms'}`);
+          return;
         }
+
+        const data = await response.json();
+        setRooms(data.rooms);
       } catch (err) {
-        setError('Network error occurred');
+        setError("Network error occurred");
         console.error(err);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -46,7 +48,6 @@ const Dashboard = () => {
   }, []);
 
   const handleTabClick = (tab) => {
-    setActiveTab(tab);
     navigate(tab === 'search' ? '/matches' : '/dashboard');
   };
 
@@ -67,8 +68,8 @@ const Dashboard = () => {
 
       <div className="dashboard-tabs">
         <button
-            className={`tab-button ${activeTab === 'share' ? 'active' : ''}`}
-            onClick={() => handleTabClick('share')}
+          className={`tab-button ${activeTab === 'share' ? 'active' : ''}`}
+          onClick={() => handleTabClick('share')}
         >
           Share your space
         </button>
@@ -80,29 +81,20 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {/* Display rooms */}
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : error ? (
-        <div className="error-message">{error}</div>
-      ) : rooms.length === 0 ? (
-        <div>No rooms available</div>
-      ) : (
-        rooms.map((room, index) => (
-          <div key={index} className="post-card">
+      {error && <p className="error-text">{error}</p>}
+      {rooms.length > 0 ? (
+        rooms.map((room) => (
+          <div key={room.id} className="post-card">
             <div className="card-image">
-              <img
-                src={room.photosUrl ? room.photosUrl[0] : Room1} // Assuming room has photosUrl array
-                alt="Room"
-              />
+              <img src={Room1} alt="Room" />
               <span className="badge">Techie</span>
             </div>
             <div className="card-content">
-              <h2>{room.title || 'No Title'}</h2>
-              <p>{room.location?.subLocality || 'Unknown Location'}</p>
-              <p className="sharing">{room.roomType || 'Unknown'}</p>
+              <h2>{room.title || "Semi Furnished All Amenities"}</h2>
+              <p>{room.location || "Location details not available"}</p>
+              <p className="sharing">SHARING</p>
               <p className="user-details">
-                {room.owner ? room.owner.firstName + ' ' + room.owner.lastName : 'Unknown User'}
+                Engineering Bachelor, Sophomore at Symbiosis Institute of Technology
               </p>
             </div>
             <div className="card-actions">
@@ -112,6 +104,8 @@ const Dashboard = () => {
             </div>
           </div>
         ))
+      ) : (
+        !error && <p className="no-rooms-text">No rooms available</p>
       )}
 
       <footer className="bottom-nav">
