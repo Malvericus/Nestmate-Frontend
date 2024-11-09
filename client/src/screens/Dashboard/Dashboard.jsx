@@ -20,7 +20,7 @@ const Dashboard = () => {
     const limit = 10;
     try {
       const response = await fetch(
-        `https://nestmatebackend.ktandon2004.workers.dev/rooms/?userId=${userId}&page=${page}&limit=${limit}`,
+        `https://nestmatebackend.ktandon2004.workers.dev/rooms/`,
         {
           method: "GET",
           headers: {
