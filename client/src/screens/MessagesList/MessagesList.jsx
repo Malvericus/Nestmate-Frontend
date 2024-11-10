@@ -25,13 +25,11 @@ const Messages = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                console.log(response)
                 if (!response.ok) {
                     throw new Error("Failed to fetch matches");
                 }
 
                 const data = await response.json();
-                console.log(data)
                 setMatches(data.matches);
             } catch (error) {
                 console.error("Error fetching matches:", error);
@@ -146,12 +144,16 @@ const Messages = () => {
                             <>
                                 <div className="chat-header">{selectedUser.firstName} {selectedUser.lastName}</div>
                                 <div className="chat-messages">
-                                    {messages.map((msg, index) => (
-                                        <div key={index} className={`chat-bubble ${msg.senderId === "me" ? 'my-message' : 'their-message'}`}>
-                                            <p>{msg.content}</p>
-                                            <span className="timestamp">{msg.timestamp}</span>
-                                        </div>
-                                    ))}
+                                    {messages.length > 0 ? (
+                                        messages.map((msg, index) => (
+                                            <div key={index} className={`chat-bubble ${msg.senderId === "me" ? 'my-message' : 'their-message'}`}>
+                                                <p>{msg.content}</p>
+                                                <span className="timestamp">{msg.timestamp}</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>No messages yet.</p>
+                                    )}
                                 </div>
                                 <div className="chat-input">
                                     <input
