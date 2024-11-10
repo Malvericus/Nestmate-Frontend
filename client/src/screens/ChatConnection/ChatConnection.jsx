@@ -13,12 +13,14 @@ const API = {
   GetChatbotResponse: async (model, message) => {
     try {
       console.log("Sending message to API:", message);
-      console.log("1")
-      const result = await model.generateContent(message); 
-      console.log("2")
-      const response = result?.response || "No response received";
-      console.log("Full API response:", JSON.stringify(response, null, 2));
-      console.log("API result:", result);
+      console.log("1");
+      const result = await model.generateContent(message);
+      console.log("2");
+
+      // Extracting the text field from the response
+      const response = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No response received";
+      console.log("API response:", response);
+
       return response;
     } catch (error) {
       console.error("Error fetching chatbot response:", error);
@@ -26,6 +28,7 @@ const API = {
     }
   }
 };
+
 
 const ChatConnections = () => {
   const navigate = useNavigate();
