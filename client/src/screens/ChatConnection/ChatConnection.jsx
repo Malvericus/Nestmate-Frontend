@@ -13,7 +13,6 @@ const API = {
   GetChatbotResponse: async (model, message) => {
     try {
       console.log("Sending message to API:", message);
-      console.log("1");
 
       // Debugging: Check the model and its methods
       console.log("Model object:", model);
@@ -22,13 +21,11 @@ const API = {
       }
 
       const result = await model.generateContent(message);
-      console.log("2");
 
       // Store the stringified result
       const resultString = JSON.stringify(result, null, 2);
 
       // Log the entire stringified result
-      console.log("Full API result:", resultString);
 
       // Convert the string back to a JSON object
       const resultJson = JSON.parse(resultString);
@@ -88,6 +85,7 @@ const ChatConnections = () => {
 
       try {
         const welcomeResponse = await API.GetChatbotResponse(model, "hi");
+        console.log("fasjbdfsdibfdis")
         setMessages([
           <BotMessage key="welcome" text={welcomeResponse} />
         ]);
