@@ -17,11 +17,17 @@ const API = {
       const result = await model.generateContent(message);
       console.log("2");
 
-      // Log the entire result object in a readable format
-      console.log("Full API result:", JSON.stringify(result, null, 2));
+      // Store the stringified result
+      const resultString = JSON.stringify(result, null, 2);
 
-      // Extract the 'text' from the response if available
-      const response = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No response received";
+      // Log the entire stringified result
+      console.log("Full API result:", resultString);
+
+      // Convert the string back to a JSON object
+      const resultJson = JSON.parse(resultString);
+
+      // Access the 'text' from the nested structure
+      const response = resultJson?.response?.candidates?.[0]?.content?.parts?.[0]?.text || "No response received";
       console.log("API response:", response);
 
       return response;
