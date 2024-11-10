@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ThumbsUp, MessageCircle, MoreHorizontal, Home, Compass, PlusCircle, Users, MessageSquare } from 'lucide-react';
+import { Bell, Edit, Trash2, Home, Compass, PlusCircle, Users, MessageSquare } from 'lucide-react';
 import Person from "../../assets/PersonIcon.svg";
-import Room1 from "../../assets/1.jpg";
+import Room from "../../assets/{room}.jpg";
 import HomeIcon from "../../assets/HomeIcon.svg";
 import './Dashboard.css';
+import Modal from './Modal';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('share');
   const [rooms, setRooms] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editRoom, setEditRoom] = useState(null);
   const navigate = useNavigate();
 
   const handleTabClick = (tab) => {
@@ -20,7 +23,6 @@ const Dashboard = () => {
 
   const fetchRooms = async () => {
     const token = localStorage.getItem("token");
-    console.log("Token:", token);  // Verify token retrieval
 
     if (!token) {
       setError("Unauthorized: No token found");
@@ -28,7 +30,7 @@ const Dashboard = () => {
       return;
     }
 
-    const userId = localStorage.getItem("userId"); 
+    const userId = localStorage.getItem("userId");
 
     try {
       const response = await fetch(
@@ -61,6 +63,20 @@ const Dashboard = () => {
   useEffect(() => {
     fetchRooms();
   }, []);
+
+  const handleDelete = (roomTitle) => {
+    setRooms(rooms.filter(room => room.title !== roomTitle));
+  };
+
+  const handleEditClick = (room) => {
+    setEditRoom(room);
+    setShowEditModal(true);
+  };
+
+  const handleEditSave = () => {
+    setRooms(rooms.map(room => room.title === editRoom.title ? editRoom : room));
+    setShowEditModal(false);
+  };
 
   return (
     <div className="dashboard-container">
@@ -100,26 +116,72 @@ const Dashboard = () => {
         rooms.map((room, index) => (
           <div key={room.id || index} className="post-card">
             <div className="card-image">
-              <img src={Room1} alt="Room" />
-              <span className="badge">Techie</span>
+              <img src={Room} alt="Room" />
             </div>
             <div className="card-content">
               <h2>{room.title}</h2>
               <p>{room.location}</p>
               <p className="sharing">{room.roomType}</p>
               <p className="user-details">
-                Engineering Bachelor, Sophomore at Symbiosis Institute of Technology
+                A beautiful and fully furnished apartment in the heart of the city.
               </p>
+              <p className="available-date">Available from: {room.availableFrom || '2024-10-15'}</p>
             </div>
             <div className="card-actions">
-              <ThumbsUp className="action-button" size={20} color="#5c8aec" />
-              <MessageCircle className="action-button" size={20} color="#5c8aec" />
-              <MoreHorizontal className="action-button" size={20} color="#5c8aec" />
+              <Edit
+                className="action-button"
+                size={20}
+                color="black"
+                onClick={() => handleEditClick(room)}
+              />
+              <Trash2
+                className="action-button"
+                size={20}
+                color="black"
+                onClick={() => handleDelete(room.title)}
+              />
             </div>
           </div>
         ))
       ) : (
         <p className="no-rooms-text">No rooms available</p>
+      )}
+
+      {showEditModal && editRoom && (
+        <Modal onClose={() => setShowEditModal(false)}>
+          <h2>Edit Room</h2>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleEditSave();
+            }}
+          >
+            <label>
+              Title:
+              <input
+                type="text"
+                value={editRoom.title}
+                onChange={(e) => setEditRoom({ ...editRoom, title: e.target.value })}
+              />
+            </label>
+            <label>
+              Description:
+              <textarea
+                value={editRoom.description || ''}
+                onChange={(e) => setEditRoom({ ...editRoom, description: e.target.value })}
+              />
+            </label>
+            <label>
+              Available From:
+              <input
+                type="date"
+                value={editRoom.availableFrom || ''}
+                onChange={(e) => setEditRoom({ ...editRoom, availableFrom: e.target.value })}
+              />
+            </label>
+            <button type="submit">Save Changes</button>
+          </form>
+        </Modal>
       )}
 
       <footer className="bottom-nav">
