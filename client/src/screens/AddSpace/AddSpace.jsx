@@ -14,7 +14,7 @@ const AddSpace = () => {
       city: '',
       state: '',
       pincode: '',
-      rent: '',
+      rent: 0,
       roomType: '',
       amenities: '',
       photosUrl: [],  
@@ -23,8 +23,11 @@ const AddSpace = () => {
     const [loading, setLoading] = useState(false);
   
     const handleChange = (e) => {
-      const { name, value } = e.target;
-      setFormData({ ...formData, [name]: value });
+        const { name, value } = e.target;
+        
+        // Convert rent to a number
+        const updatedValue = name === "rent" ? Number(value) : value;
+        setFormData({ ...formData, [name]: updatedValue });
     };
 
     const handleFileUpload = (e) => {
@@ -132,7 +135,7 @@ const AddSpace = () => {
                 </div>
                 <div className="tile small-tile">
                     <label>Rent</label>
-                    <input type="number" name="rent" value={formData.rent} onChange={handleChange} placeholder="2500" />
+                    <input type="number" name="rent" value={formData.rent} onChange={handleChange} placeholder="2500" min="1"/>
                 </div>
                 <div className="tile small-tile">
                     <label>Room Type</label>
