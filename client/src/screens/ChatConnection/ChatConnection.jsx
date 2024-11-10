@@ -24,7 +24,7 @@ const API = {
         },
         body: JSON.stringify({
           contents: [{
-            parts: [{ text: message }],
+            parts: [{ "text": message }],
           }],
         }),
       });
