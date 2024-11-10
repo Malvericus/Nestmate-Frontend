@@ -39,8 +39,8 @@ const UserProfile = () => {
       <div className="profile-section">
         <img src={Person} alt="Profile" className="profile-picture" />
         <div className="user-details">
-          <h2>John Doe</h2>
-          <p>john.doe@example.com</p>
+          <h2>Alex Taylor</h2>
+          <p>2@gmail.com</p>
         </div>
       </div>
 
