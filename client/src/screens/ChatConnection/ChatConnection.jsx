@@ -85,10 +85,10 @@ const ChatConnections = () => {
 
       try {
         const welcomeResponse = await API.GetChatbotResponse(model, "hi");
-        console.log("fasjbdfsdibfdis")
         setMessages([
           <BotMessage key="welcome" text={welcomeResponse} />
         ]);
+        console.log("hio")
       } catch (error) {
         console.error("Error loading welcome message:", error);
       }
