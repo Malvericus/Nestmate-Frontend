@@ -20,14 +20,18 @@ const Messages = () => {
         const fetchMatches = async () => {
             try {
                 const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/matches/', {
+                    method: 'GET',
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
+                console.log(response)
                 if (!response.ok) {
                     throw new Error("Failed to fetch matches");
                 }
+
                 const data = await response.json();
+                console.log(data)
                 setMatches(data.matches);
             } catch (error) {
                 console.error("Error fetching matches:", error);
