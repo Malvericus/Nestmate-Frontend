@@ -49,8 +49,13 @@ const Matches = () => {
             },
             body: JSON.stringify(filters)
         });
+        console.log(JSON.stringify(filters))
+        console.log(response.ok)
+
         if (response.ok) {
             const data = await response.json();
+            console.log(data)
+            console.log(data.rooms)
             setRooms(data.rooms);
         } else {
             console.error('Failed to fetch rooms');
