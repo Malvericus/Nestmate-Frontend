@@ -53,7 +53,7 @@ const ChatConnections = () => {
         if (!data.apiKey) throw new Error('API key not found in response');
 
         const genAI = new GoogleGenerativeAI(data.apiKey);
-        const aiModel = genAI.getGenerativeModel({ model: 'tunedModels/chatmate-iikhgwx9gqzb' });
+        const aiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         setModel(aiModel);
         console.log('AI model initialized');
       } catch (error) {
