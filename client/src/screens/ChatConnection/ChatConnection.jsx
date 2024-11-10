@@ -17,11 +17,12 @@ const API = {
       const result = await model.generateContent(message);
       console.log("2");
 
-      // Extracting the text field from the response
-      const response = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No response received";
+      // Log the entire result object in a readable format
+      console.log("Full API result:", JSON.stringify(result, null, 2));
+
+      // Access the response text if available
+      const response = result?.response || "No response received";
       console.log("API response:", response);
-      console.log(result?.candidates?.[0]?.content?.parts?.[0]?.text)
-      console.log(result)
 
       return response;
     } catch (error) {
@@ -30,7 +31,7 @@ const API = {
     }
   }
 };
-
+ 
 
 const ChatConnections = () => {
   const navigate = useNavigate();
