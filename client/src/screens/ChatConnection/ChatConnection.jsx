@@ -36,10 +36,24 @@ const ChatConnections = () => {
   useEffect(() => {
     const initializeAI = async () => {
       try {
-        // Fetch API key from your backend
-        const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi');
+        // Fetch API key using PUT request
+        const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          // Add any required body data here
+          body: JSON.stringify({
+            // Add any necessary data for the PUT request
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
-        console.log(response.data)
+        console.log("API Response:", data);
         
         if (!data.apiKey) {
           throw new Error('API key not found in response');
@@ -126,7 +140,7 @@ const ChatConnections = () => {
             <Compass size={24} color="#6c7b8a" />
           </button>
           <button className="nav-button" onClick={() => navigate('/add')}>
-            <PlusCircle size={24} color="#6c7b8a" /> 
+            <PlusCircle size={24} color="#6c7b8a" />
           </button>
           <button className="nav-button" onClick={() => navigate('/user')}>
             <Users size={24} color="#6c7b8a" />
@@ -151,5 +165,4 @@ const ChatConnections = () => {
   );
 };
 
-
-export default ChatConnections;
+export default ChatConnections; 
