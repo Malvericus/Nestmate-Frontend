@@ -6,24 +6,40 @@ import Messages from './components/Messages';
 import Input from './components/Input';
 import BotMessage from './components/BotMessage';
 import UserMessage from './components/UserMessage';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import './Chatbot.css';
 
 // API configuration and response handling
 const API = {
-  GetChatbotResponse: async (model, message) => {
+  GetChatbotResponse: async (message) => {
+    const apiUrl = 'https://generativelanguage.googleapis.com/v1/tunedModels/chatm-djho3ni30kvg:generateContent';
+    const apiKey = 'ya29.a0AeDClZAAQJxzg_YcdSriEZJRRwcZ0Rus8DoCRxSrs2jYzxFqECF3I54ud2mW1MxAIBJ32303olwuis_rJcReueeaYlVcSg3hAtRXoGFG2aX8ZwdU7H--__EKUaVHVgVZpLNDm8P2nc17PoLpDXsKOvjFEtkptIJnTIQplpTFaCgYKATUSARASFQHGX2Mi0PCV7G7M2CQCq4jD9YJyvw0175';
+
     try {
-      console.log('Sending message to API:', message);
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+          'x-goog-user-project': 'chatx-441312',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: message }],
+          }],
+        }),
+      });
 
-      // Correctly format the input for generateContent
-      const result = await model.generateContent(message); 
-      const response = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received';
-      console.log('API response:', response);
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
 
-      return response;
+      const data = await response.json();
+      const botResponse = data?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received';
+      console.log('API response:', botResponse);
+      return botResponse;
     } catch (error) {
       console.error('Error fetching chatbot response:', error);
-      return 'Sorry, I couldn\'t process that. Error: ' + error.message;
+      return `Sorry, I couldn't process that. Error: ${error.message}`;
     }
   },
 };
@@ -31,80 +47,37 @@ const API = {
 const ChatConnections = () => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    // Initialize Google Generative AI model
-    const initializeAI = async () => {
-      try {
-        const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (!data.apiKey) throw new Error('API key not found in response');
-
-        const genAI = new GoogleGenerativeAI(data.apiKey);
-        const aiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        setModel(aiModel);
-        console.log('AI model initialized');
-      } catch (error) {
-        console.error('Error initializing Google Generative AI:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeAI();
-  }, []);
-
-  // Load welcome message once model is ready
+  // Load welcome message on component mount
   useEffect(() => {
     const loadWelcomeMessage = async () => {
-      if (model) {
-        try {
-          const welcomeResponse = await API.GetChatbotResponse(model, 'hi');
-          setMessages([<BotMessage key="welcome" text={welcomeResponse} />]);
-        } catch (error) {
-          console.error('Error loading welcome message:', error);
-        }
-      }
+      setIsLoading(true);
+      const welcomeResponse = await API.GetChatbotResponse('hi');
+      setMessages([<BotMessage key="welcome" text={welcomeResponse} />]);
+      setIsLoading(false);
     };
 
     loadWelcomeMessage();
-  }, [model]);
+  }, []);
 
   const send = async (text) => {
-    if (!text.trim() || !model) return;
+    if (!text.trim()) return;
 
-    try {
-      // Add user message
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        <UserMessage key={`user-${prevMessages.length}`} text={text} />,
-      ]);
+    // Add user message
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      <UserMessage key={`user-${prevMessages.length}`} text={text} />,
+    ]);
 
-      // Fetch and add bot response
-      const botResponse = await API.GetChatbotResponse(model, text);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        <BotMessage key={`bot-${prevMessages.length}`} fetchMessage={() => Promise.resolve(botResponse)} />,
-      ]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        <BotMessage key={`error-${prevMessages.length}`} text="Sorry, I encountered an error processing your message." />,
-      ]);
-    }
+    // Fetch and add bot response
+    setIsLoading(true);
+    const botResponse = await API.GetChatbotResponse(text);
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      <BotMessage key={`bot-${prevMessages.length}`} text={botResponse} />,
+    ]);
+    setIsLoading(false);
   };
 
   return (
@@ -120,7 +93,7 @@ const ChatConnections = () => {
           <button className="nav-button" onClick={() => navigate('/add')}>
             <PlusCircle size={24} color="#6c7b8a" />
           </button>
-          <button className="nav-button" onClick={() => navigate('/messages')}>
+          <button className="nav-button" onClick={() => navigate('/user')}>
             <Users size={24} color="#6c7b8a" />
           </button>
           <button className="nav-button" onClick={() => navigate('/chat/:id')}>
@@ -131,7 +104,7 @@ const ChatConnections = () => {
         <div className="chatbot-card">
           <Header />
           {isLoading ? (
-            <div className="loading-message">Initializing chatbot...</div>
+            <div className="loading-message">Processing...</div>
           ) : (
             <Messages messages={messages} />
           )}
