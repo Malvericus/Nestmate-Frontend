@@ -39,9 +39,11 @@ const ChatConnections = () => {
         // Fetch API key from your backend
         const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi');
         const data = await response.json();
+        console.log(data)
+        console.log(response)
         
         if (!data.apiKey) {
-          throw new Error('API key not found in response'+data.apiKey);
+          throw new Error('API key not found in response');
         }
 
         // Initialize the Gemini AI client
