@@ -41,7 +41,6 @@ const Matches = () => {
 
     const searchRooms = async () => {
         const token = localStorage.getItem('token');
-        console.log(token)
         const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', {
             method: 'POST',
             headers: {
@@ -50,7 +49,6 @@ const Matches = () => {
             },
             body: JSON.stringify(filters)
         });
-        console.log(response)
         if (response.ok) {
             const data = await response.json();
             setRooms(data.rooms);
@@ -122,9 +120,9 @@ const Matches = () => {
                     className="filter-select"
                 >
                     <option value="">Select Room Type</option>
-                    <option value="1BHK">1BHK</option>
-                    <option value="2BHK">2BHK</option>
+                    <option value="Single">Single</option>
                     <option value="Shared">Shared</option>
+                    <option value="2BHK">2BHK</option>
                 </select>
                 <input
                     type="date"
