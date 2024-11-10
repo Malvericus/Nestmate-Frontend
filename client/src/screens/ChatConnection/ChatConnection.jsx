@@ -12,8 +12,8 @@ import "./Chatbot.css";
 // Import Google Generative AI Client
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const API_KEY = "AIzaSyBmTr1Zdz6uPbBYkZAUqXruFeyJ0mlJy7w";
-const genAI = new GoogleGenerativeAI(API_KEY);
+const key = "AIzaSyBmTr1Zdz6uPbBYkZAUqXruFeyJ0mlJy7w";
+const genAI = new GoogleGenerativeAI(API_KEY=key);
 const model = genAI.getGenerativeModel({ model: "tunedModels/nestmateassistant-kfjyqmeqrlzr" });
 
 const API = {
