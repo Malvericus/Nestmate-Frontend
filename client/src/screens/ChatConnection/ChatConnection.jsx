@@ -20,8 +20,8 @@ const API = {
       // Log the entire result object in a readable format
       console.log("Full API result:", JSON.stringify(result, null, 2));
 
-      // Access the response text if available
-      const response = result?.response || "No response received";
+      // Extract the 'text' from the response if available
+      const response = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No response received";
       console.log("API response:", response);
 
       return response;
@@ -31,6 +31,7 @@ const API = {
     }
   }
 };
+
  
 
 const ChatConnections = () => {
