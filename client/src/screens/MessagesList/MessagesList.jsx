@@ -19,7 +19,7 @@ const Messages = () => {
     useEffect(() => {
         const fetchMatches = async () => {
             try {
-                const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/matches/', {
+                const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/matches', {
                     method: 'GET',
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -42,6 +42,7 @@ const Messages = () => {
     const fetchChatMessages = async (matchId) => {
         try {
             const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, {
+                method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
