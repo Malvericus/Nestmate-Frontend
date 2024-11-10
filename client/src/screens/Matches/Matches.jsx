@@ -55,28 +55,27 @@ const Matches = () => {
 
     const searchRooms = async () => {
         const token = localStorage.getItem('token');
-        try {
-            const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(filters)
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log(data); // Check data structure in console for debugging
-                setRooms(data.rooms);
-            } else {
-                console.error('Failed to fetch rooms');
-            }
-        } catch (error) {
-            console.error('Error fetching rooms:', error);
+        const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(filters)
+        });
+        console.log(JSON.stringify(filters))
+        console.log(response.ok)
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data)
+            console.log(data.rooms)
+            setRooms(data.rooms);
+        } else {
+            console.error('Failed to fetch rooms');
         }
     };
-    
+
     return (
         <div className="matches-container">
             <header className="matches-header">
