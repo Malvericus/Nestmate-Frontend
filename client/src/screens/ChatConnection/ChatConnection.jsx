@@ -6,21 +6,38 @@ import Messages from './components/Messages';
 import Input from './components/Input';
 import BotMessage from './components/BotMessage';
 import UserMessage from './components/UserMessage';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import './Chatbot.css';
 
 // API configuration and response handling
 const API = {
-  GetChatbotResponse: async (model, message) => {
+  GetChatbotResponse: async (authBearer, message) => {
     try {
       console.log('Sending message to API:', message);
 
-      // Correctly format the input for generateContent
-      const result = await model.generateContent(message); 
-      const response = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received';
-      console.log('API response:', response);
+      // Fetch API response without axios
+      const response = await fetch('https://generativelanguage.googleapis.com/v1/tunedModels/chatm-djho3ni30kvg:generateContent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authBearer,
+          'x-goog-user-project': 'chatx-441312'
+        },
+        body: JSON.stringify({
+          "contents": [
+            {
+              "parts": [
+                { "text": message }
+              ]
+            }
+          ]
+        })
+      });
 
-      return response;
+      const result = await response.json();
+      const botMessage = result?.contents?.[0]?.parts?.[0]?.text || 'No response received';
+      console.log('API response:', botMessage);
+
+      return botMessage;
     } catch (error) {
       console.error('Error fetching chatbot response:', error);
       return 'Sorry, I couldn\'t process that. Error: ' + error.message;
@@ -31,11 +48,11 @@ const API = {
 const ChatConnections = () => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
-  const [model, setModel] = useState(null);
+  const [authBearer, setAuthBearer] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize Google Generative AI model
+    // Initialize AI with API key and authorization token from backend
     const initializeAI = async () => {
       try {
         const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi', {
@@ -50,14 +67,12 @@ const ChatConnections = () => {
         }
 
         const data = await response.json();
-        if (!data.apiKey) throw new Error('API key not found in response');
+        if (!data.apiKey || !data.authBearer) throw new Error('Required credentials not found in response');
 
-        const genAI = new GoogleGenerativeAI(data.apiKey);
-        const aiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        setModel(aiModel);
+        setAuthBearer(data.authBearer);
         console.log('AI model initialized');
       } catch (error) {
-        console.error('Error initializing Google Generative AI:', error);
+        console.error('Error initializing AI:', error);
       } finally {
         setIsLoading(false);
       }
@@ -69,9 +84,9 @@ const ChatConnections = () => {
   // Load welcome message once model is ready
   useEffect(() => {
     const loadWelcomeMessage = async () => {
-      if (model) {
+      if (authBearer) {
         try {
-          const welcomeResponse = await API.GetChatbotResponse(model, 'hi');
+          const welcomeResponse = await API.GetChatbotResponse(authBearer, 'hi');
           setMessages([<BotMessage key="welcome" text={welcomeResponse} />]);
         } catch (error) {
           console.error('Error loading welcome message:', error);
@@ -80,10 +95,10 @@ const ChatConnections = () => {
     };
 
     loadWelcomeMessage();
-  }, [model]);
+  }, [authBearer]);
 
   const send = async (text) => {
-    if (!text.trim() || !model) return;
+    if (!text.trim() || !authBearer) return;
 
     try {
       // Add user message
@@ -93,7 +108,7 @@ const ChatConnections = () => {
       ]);
 
       // Fetch and add bot response
-      const botResponse = await API.GetChatbotResponse(model, text);
+      const botResponse = await API.GetChatbotResponse(authBearer, text);
       setMessages((prevMessages) => [
         ...prevMessages,
         <BotMessage key={`bot-${prevMessages.length}`} fetchMessage={() => Promise.resolve(botResponse)} />,
@@ -143,3 +158,4 @@ const ChatConnections = () => {
 };
 
 export default ChatConnections;
+ 
