@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Home, Compass, PlusCircle, Users, MessageSquare } from 'lucide-react';
 import Header from './components/Header';
@@ -7,43 +6,24 @@ import Messages from './components/Messages';
 import Input from './components/Input';
 import BotMessage from './components/BotMessage';
 import UserMessage from './components/UserMessage';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import './Chatbot.css';
 
 // API configuration and response handling
 const API = {
-  GetChatbotResponse: async (message) => {
-    let data = JSON.stringify({
-      "contents": [
-        {
-          "parts": [
-            {
-              "text": message
-            }
-          ]
-        }
-      ]
-    });
-
-    let config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: 'https://generativelanguage.googleapis.com/v1/tunedModels/chatm-djho3ni30kvg:generateContent',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'Authorization': 'Bearer ya29.a0AeDClZAAQJxzg_YcdSriEZJRRwcZ0Rus8DoCRxSrs2jYzxFqECF3I54ud2mW1MxAIBJ32303olwuis_rJcReueeaYlVcSg3hAtRXoGFG2aX8ZwdU7H--__EKUaVHVgVZpLNDm8P2nc17PoLpDXsKOvjFEtkptIJnTIQplpTFaCgYKATUSARASFQHGX2Mi0PCV7G7M2CQCq4jD9YJyvw0175', 
-        'x-goog-user-project': 'chatx-441312'
-      },
-      data: data
-    };
-
+  GetChatbotResponse: async (model, message) => {
     try {
-      const response = await axios.request(config);
-      const botResponse = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received';
-      console.log('API response:', botResponse);
-      return botResponse;
+      console.log('Sending message to API:', message);
+
+      // Correctly format the input for generateContent
+      const result = await model.generateContent(message); 
+      const response = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received';
+      console.log('API response:', response);
+
+      return response;
     } catch (error) {
       console.error('Error fetching chatbot response:', error);
-      return `Sorry, I couldn't process that. Error: ${error.message}`;
+      return 'Sorry, I couldn\'t process that. Error: ' + error.message;
     }
   },
 };
@@ -51,35 +31,80 @@ const API = {
 const ChatConnections = () => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
+  const [model, setModel] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load welcome message once component is mounted
+    // Initialize Google Generative AI model
+    const initializeAI = async () => {
+      try {
+        const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.apiKey) throw new Error('API key not found in response');
+
+        const genAI = new GoogleGenerativeAI(data.apiKey);
+        const aiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        setModel(aiModel);
+        console.log('AI model initialized');
+      } catch (error) {
+        console.error('Error initializing Google Generative AI:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAI();
+  }, []);
+
+  // Load welcome message once model is ready
+  useEffect(() => {
     const loadWelcomeMessage = async () => {
-      setIsLoading(true);
-      const welcomeResponse = await API.GetChatbotResponse('hi');
-      setMessages([<BotMessage key="welcome" text={welcomeResponse} />]);
-      setIsLoading(false);
+      if (model) {
+        try {
+          const welcomeResponse = await API.GetChatbotResponse(model, 'hi');
+          setMessages([<BotMessage key="welcome" text={welcomeResponse} />]);
+        } catch (error) {
+          console.error('Error loading welcome message:', error);
+        }
+      }
     };
 
     loadWelcomeMessage();
-  }, []);
+  }, [model]);
 
   const send = async (text) => {
-    if (!text.trim()) return;
+    if (!text.trim() || !model) return;
 
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      <UserMessage key={`user-${prevMessages.length}`} text={text} />,
-    ]);
+    try {
+      // Add user message
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        <UserMessage key={`user-${prevMessages.length}`} text={text} />,
+      ]);
 
-    setIsLoading(true);
-    const botResponse = await API.GetChatbotResponse(text);
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      <BotMessage key={`bot-${prevMessages.length}`} text={botResponse} />,
-    ]);
-    setIsLoading(false);
+      // Fetch and add bot response
+      const botResponse = await API.GetChatbotResponse(model, text);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        <BotMessage key={`bot-${prevMessages.length}`} fetchMessage={() => Promise.resolve(botResponse)} />,
+      ]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        <BotMessage key={`error-${prevMessages.length}`} text="Sorry, I encountered an error processing your message." />,
+      ]);
+    }
   };
 
   return (
@@ -95,7 +120,7 @@ const ChatConnections = () => {
           <button className="nav-button" onClick={() => navigate('/add')}>
             <PlusCircle size={24} color="#6c7b8a" />
           </button>
-          <button className="nav-button" onClick={() => navigate('/user')}>
+          <button className="nav-button" onClick={() => navigate('/messages')}>
             <Users size={24} color="#6c7b8a" />
           </button>
           <button className="nav-button" onClick={() => navigate('/chat/:id')}>
@@ -106,7 +131,7 @@ const ChatConnections = () => {
         <div className="chatbot-card">
           <Header />
           {isLoading ? (
-            <div className="loading-message">Processing...</div>
+            <div className="loading-message">Initializing chatbot...</div>
           ) : (
             <Messages messages={messages} />
           )}
@@ -118,4 +143,3 @@ const ChatConnections = () => {
 };
 
 export default ChatConnections;
- 
