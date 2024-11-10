@@ -125,7 +125,7 @@ const ChatConnections = () => {
             <Compass size={24} color="#6c7b8a" />
           </button>
           <button className="nav-button" onClick={() => navigate('/add')}>
-            <PlusCircle size={24} color="#6c7b8a" />
+            <PlusCircle size={24} color="#6c7b8a" /> 
           </button>
           <button className="nav-button" onClick={() => navigate('/user')}>
             <Users size={24} color="#6c7b8a" />
@@ -149,5 +149,6 @@ const ChatConnections = () => {
     </div>
   );
 };
+
 
 export default ChatConnections;
