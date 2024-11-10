@@ -41,15 +41,16 @@ const Matches = () => {
 
     const searchRooms = async () => {
         const token = localStorage.getItem('token');
+        console.log(token)
         const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(filters)
         });
-
+        console.log(response)
         if (response.ok) {
             const data = await response.json();
             setRooms(data.rooms);
