@@ -8,24 +8,20 @@ import BotMessage from './components/BotMessage';
 import UserMessage from './components/UserMessage';
 import "./Chatbot.css";
 
-
 // Import Google Generative AI Client
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(API_KEY="AIzaSyBmTr1Zdz6uPbBYkZAUqXruFeyJ0mlJy7w");
-const model = genAI.getGenerativeModel({ model: "tunedModels/nestmateassistant-kfjyqmeqrlzr" });
-
 const API = {
-  GetChatbotResponse: async (message) => {
+  GetChatbotResponse: async (model, message) => {
     try {
-      console.log("Sending message to API:", message);  // Debug log
+      console.log("Sending message to API:", message);
       const prompt = message;
       const result = await model.generateContent(prompt);
-      console.log("API response:", result.response.text());  // Debug log
-      return result.response.text(); // Returning the chatbot response
+      console.log("API response:", result.response.text());
+      return result.response.text();
     } catch (error) {
       console.error("Error fetching chatbot response:", error);
-      return "Sorry, I couldn't process that."+error;
+      return "Sorry, I couldn't process that." + error;
     }
   }
 };
@@ -33,29 +29,50 @@ const API = {
 const ChatConnections = () => {
     const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
+    const [model, setModel] = useState(null);
+
+    // Fetch API key and initialize Google Generative AI client
+    useEffect(() => {
+        const initializeAI = async () => {
+            try {
+                const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi');
+                const data = await response.json();
+                const apiKey = data.apiKey;
+
+                // Initialize Google Generative AI Client with the fetched API key
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const aiModel = genAI.getGenerativeModel({ model: "tunedModels/nestmateassistant-kfjyqmeqrlzr" });
+                setModel(aiModel);
+            } catch (error) {
+                console.error("Error initializing Google Generative AI:", error);
+            }
+        };
+
+        initializeAI();
+    }, []);
 
     // Load the welcome message when the component is mounted
     useEffect(() => {
         async function loadWelcomeMessage() {
-            console.log("Loading welcome message..."); // Debug log
+            console.log("Loading welcome message...");
             setMessages([ 
                 <BotMessage 
                     key="0"
-                    fetchMessage={async () => await API.GetChatbotResponse("hi")} 
+                    fetchMessage={async () => await API.GetChatbotResponse(model, "hi")} 
                 />
             ]);
         }
-        loadWelcomeMessage();
-    }, []);
+        if (model) loadWelcomeMessage();
+    }, [model]);
 
     // Function to send a message to the chatbot and append the response
     const send = async (text) => {
-        console.log("Sending message:", text); // Debug log
+        console.log("Sending message:", text);
         const newMessages = messages.concat(
             <UserMessage key={messages.length + 1} text={text} />,
             <BotMessage 
                 key={messages.length + 2} 
-                fetchMessage={async () => await API.GetChatbotResponse(text)} 
+                fetchMessage={async () => await API.GetChatbotResponse(model, text)} 
             />
         );
         setMessages(newMessages);
