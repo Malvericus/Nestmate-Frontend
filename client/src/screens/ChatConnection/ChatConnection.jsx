@@ -34,7 +34,9 @@ const API = {
       });
 
       const result = await response.json();
+      console.log(result)
       const botMessage = result?.contents?.[0]?.parts?.[0]?.text || 'No response received';
+      console.log(JSON.stringify(result))
       console.log('API response:', botMessage);
 
       return botMessage;
