@@ -16,6 +16,7 @@ const API = {
       // Generate content and wait for the response
       const result = await model.generateContent(message);
       // Get the response text from the result
+      console.log(response)
       const response = await result.response.text();
       console.log("API response:", response);
       return response;
@@ -60,7 +61,7 @@ const ChatConnections = () => {
         const aiModel = genAI.getGenerativeModel({ 
           model: "gemini-1.5-flash"  // Changed from tunedModels/nestmateassistant-kfjyqmeqrlzr
         });
-        
+        console.log(apiKey)
         setModel(aiModel);
         setIsLoading(false);
       } catch (error) {
