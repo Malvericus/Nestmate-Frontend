@@ -14,6 +14,13 @@ const API = {
     try {
       console.log("Sending message to API:", message);
       console.log("1");
+
+      // Debugging: Check the model and its methods
+      console.log("Model object:", model);
+      if (typeof model.generateContent !== "function") {
+        throw new Error("generateContent is not a function on the model.");
+      }
+
       const result = await model.generateContent(message);
       console.log("2");
 
@@ -37,8 +44,6 @@ const API = {
     }
   }
 };
-
- 
 
 const ChatConnections = () => {
   const navigate = useNavigate();
@@ -110,6 +115,7 @@ const ChatConnections = () => {
       ]);
     } catch (error) {
       console.error("Error sending message:", error);
+      // If API call fails, continue by adding a default response
       setMessages(prev => [
         ...prev,
         <BotMessage 
