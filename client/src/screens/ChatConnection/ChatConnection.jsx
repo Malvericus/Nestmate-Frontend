@@ -6,41 +6,19 @@ import Messages from './components/Messages';
 import Input from './components/Input';
 import BotMessage from './components/BotMessage';
 import UserMessage from './components/UserMessage';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import "./Chatbot.css";
 
 const API = {
-  GetChatbotResponse: async (apiKey, message) => {
+  GetChatbotResponse: async (model, message) => {
     try {
       console.log("Sending message to API:", message);
-      
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/tunedModels/nestmateassistant-kfjyqmeqrlzr:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: message
-              }]
-            }]
-          })
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("API response:", data);
-
-      // Extract the response text from the Gemini API response
-      const responseText = data.candidates[0]?.content?.parts[0]?.text || "Sorry, I couldn't generate a response.";
-      return responseText;
-
+      // Generate content and wait for the response
+      const result = await model.generateContent(message);
+      // Get the response text from the result
+      const response = await result.response.text();
+      console.log("API response:", response);
+      return response;
     } catch (error) {
       console.error("Error fetching chatbot response:", error);
       return "Sorry, I couldn't process that. Error: " + error.message;
@@ -51,10 +29,10 @@ const API = {
 const ChatConnections = () => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
-  const [apiKey, setApiKey] = useState(null);
+  const [model, setModel] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize by getting the API key
+  // Initialize the AI model
   useEffect(() => {
     const initializeAI = async () => {
       try {
@@ -62,9 +40,8 @@ const ChatConnections = () => {
         const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi', {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({})
+            'Content-Type': 'application/json',
+          }
         });
 
         if (!response.ok) {
@@ -72,16 +49,22 @@ const ChatConnections = () => {
         }
 
         const data = await response.json();
-        console.log("API Key Response:", data);
         
         if (!data.apiKey) {
           throw new Error('API key not found in response');
         }
 
-        setApiKey(data.apiKey);
+        // Initialize the Gemini AI client with the correct model
+        const genAI = new GoogleGenerativeAI(data.apiKey);
+        // Use gemini-1.5-flash model as recommended in the docs
+        const aiModel = genAI.getGenerativeModel({ 
+          model: "gemini-1.5-flash"  // Changed from tunedModels/nestmateassistant-kfjyqmeqrlzr
+        });
+        
+        setModel(aiModel);
         setIsLoading(false);
       } catch (error) {
-        console.error("Error initializing:", error);
+        console.error("Error initializing Google Generative AI:", error);
         setIsLoading(false);
       }
     };
@@ -89,13 +72,13 @@ const ChatConnections = () => {
     initializeAI();
   }, []);
 
-  // Load welcome message after API key is initialized
+  // Load welcome message after model is initialized
   useEffect(() => {
     const loadWelcomeMessage = async () => {
-      if (!apiKey) return;
+      if (!model) return;
       
       try {
-        const welcomeResponse = await API.GetChatbotResponse(apiKey, "hi");
+        const welcomeResponse = await API.GetChatbotResponse(model, "hi");
         setMessages([
           <BotMessage 
             key="welcome"
@@ -107,12 +90,12 @@ const ChatConnections = () => {
       }
     };
 
-    if (apiKey) loadWelcomeMessage();
-  }, [apiKey]);
+    if (model) loadWelcomeMessage();
+  }, [model]);
 
   // Send message function
   const send = async (text) => {
-    if (!text.trim() || !apiKey) return;
+    if (!text.trim() || !model) return;
 
     try {
       // Add user message immediately
@@ -122,7 +105,7 @@ const ChatConnections = () => {
       ]);
 
       // Get bot response
-      const botResponse = await API.GetChatbotResponse(apiKey, text);
+      const botResponse = await API.GetChatbotResponse(model, text);
       
       // Add bot message
       setMessages(prev => [
@@ -144,7 +127,6 @@ const ChatConnections = () => {
   return (
     <div className="chatbot-container">
       <div className="content-section">
-        {/* Sidebar Navigation */}
         <aside className="sidebar-nav">
           <button className="nav-button" onClick={() => navigate('/dashboard')}>
             <Home size={24} color="#6c7b8a" />
@@ -163,7 +145,6 @@ const ChatConnections = () => {
           </button>
         </aside>
 
-        {/* Chatbot Section */}
         <div className="chatbot-card">
           <Header />
           {isLoading ? (
