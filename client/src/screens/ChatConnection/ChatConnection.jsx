@@ -9,17 +9,14 @@ import UserMessage from './components/UserMessage';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import './Chatbot.css';
 
+// API configuration and response handling
 const API = {
   GetChatbotResponse: async (model, message) => {
     try {
       console.log('Sending message to API:', message);
 
-      // Check if the model has generateContent method
-      if (typeof model.generateContent !== 'function') {
-        throw new Error('generateContent is not a function on the model.');
-      }
-
-      const result = await model.generateContent(message);
+      // Correctly format the input for generateContent
+      const result = await model.generateContent(message); 
       const response = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received';
       console.log('API response:', response);
 
@@ -38,6 +35,7 @@ const ChatConnections = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Initialize Google Generative AI model
     const initializeAI = async () => {
       try {
         const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi', {
@@ -57,10 +55,10 @@ const ChatConnections = () => {
         const genAI = new GoogleGenerativeAI(data.apiKey);
         const aiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         setModel(aiModel);
-        setIsLoading(false);
         console.log('AI model initialized');
       } catch (error) {
         console.error('Error initializing Google Generative AI:', error);
+      } finally {
         setIsLoading(false);
       }
     };
@@ -68,6 +66,7 @@ const ChatConnections = () => {
     initializeAI();
   }, []);
 
+  // Load welcome message once model is ready
   useEffect(() => {
     const loadWelcomeMessage = async () => {
       if (model) {
@@ -87,15 +86,17 @@ const ChatConnections = () => {
     if (!text.trim() || !model) return;
 
     try {
+      // Add user message
       setMessages((prevMessages) => [
         ...prevMessages,
         <UserMessage key={`user-${prevMessages.length}`} text={text} />,
       ]);
 
+      // Fetch and add bot response
       const botResponse = await API.GetChatbotResponse(model, text);
       setMessages((prevMessages) => [
         ...prevMessages,
-        <BotMessage key={`bot-${prevMessages.length}`} text={botResponse} />,
+        <BotMessage key={`bot-${prevMessages.length}`} fetchMessage={() => Promise.resolve(botResponse)} />,
       ]);
     } catch (error) {
       console.error('Error sending message:', error);
