@@ -13,11 +13,19 @@ const API = {
   GetChatbotResponse: async (model, message) => {
     try {
       console.log("Sending message to API:", message);
+<<<<<<< HEAD
       // Generate content and wait for the response
       const result = await model.generateContent(message);
       // Get the response text from the result
       console.log(response)
       const response = await result.response.text();
+=======
+      console.log("1")
+      const result = await model.generateContent(message); 
+      console.log("2")
+      const response = result?.response || "No response received";
+      console.log("3 "+response)
+>>>>>>> 6b46b79 (saasas)
       console.log("API response:", response);
       return response;
     } catch (error) {
