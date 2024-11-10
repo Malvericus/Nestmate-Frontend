@@ -35,7 +35,6 @@ const Matches = () => {
         const { name, value } = e.target;
     
         setFilters((prevFilters) => {
-            // If the field is 'availableFrom', format the date as required
             if (name === 'availableFrom' && value) {
                 const formattedDate = new Date(value).toISOString(); // Convert to ISO 8601 format
                 return {
@@ -43,15 +42,12 @@ const Matches = () => {
                     [name]: formattedDate
                 };
             }
-    
-            // For other fields, retain the value as it is
             return {
                 ...prevFilters,
                 [name]: value
             };
         });
     };
-    
 
     const searchRooms = async () => {
         const token = localStorage.getItem('token');
@@ -63,16 +59,43 @@ const Matches = () => {
             },
             body: JSON.stringify(filters)
         });
-        console.log(JSON.stringify(filters))
-        console.log(response.ok)
-
         if (response.ok) {
             const data = await response.json();
-            console.log(data)
-            console.log(data.rooms)
             setRooms(data.rooms);
         } else {
             console.error('Failed to fetch rooms');
+        }
+    };
+
+    const handleConnect = async () => {
+        const userId1 = localStorage.getItem('userId');  // Get userId from localStorage
+        const userId2 = selectedMatch.owner.id;  // Get ownerId from selectedMatch
+
+        const data = {
+            "userId1": userId1,
+            "userId2": userId2
+        };
+
+        const config = {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
+
+        try {
+            const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/matches', config);
+            if (response.ok) {
+                const responseData = await response.json();
+                console.log('Match response:', responseData);
+                // Handle success (e.g., show a success message or update UI)
+            } else {
+                console.error('Failed to create match');
+            }
+        } catch (error) {
+            console.error('Error creating match:', error);
         }
     };
 
@@ -175,7 +198,7 @@ const Matches = () => {
                         <p>Budget: {selectedMatch.rent}</p>
                         <p>Status: Available</p>
                         <div className="modal-buttons">
-                            <button className="connect-button">Connect</button>
+                            <button className="connect-button" onClick={handleConnect}>Connect</button>
                             <button className="close-button" onClick={closeModal}>Close</button>
                         </div>
                     </div>
@@ -194,3 +217,4 @@ const Matches = () => {
 };
 
 export default Matches;
+ 
