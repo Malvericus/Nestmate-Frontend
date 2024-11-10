@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Person from "../../assets/PersonIcon.svg";
 import HomeIcon from "../../assets/HomeIcon.svg";
 import { Bell, Home, Compass, PlusCircle, Users, MessageSquare } from 'lucide-react';
@@ -8,18 +7,7 @@ import "./Matches.css";
 
 const Matches = () => {
     const [activeTab, setActiveTab] = useState('search');
-    const [selectedMatch, setSelectedMatch] = useState(null);
-    const [rooms, setRooms] = useState([]); // State to store rooms data
-    const [searchParams, setSearchParams] = useState({
-        location: '',
-        minRent: '',
-        maxRent: '',
-        roomType: '',
-        availableFrom: '',
-        page: '1',
-        limit: '10',
-    });
-
+    const [selectedMatch, setSelectedMatch] = useState(null); 
     const navigate = useNavigate();
 
     const handleTabClick = (tab) => {
@@ -33,28 +21,6 @@ const Matches = () => {
 
     const closeModal = () => {
         setSelectedMatch(null);
-    };
-
-    // Fetch rooms from the backend
-    const fetchRooms = async () => {
-        try {
-            const response = await axios.post('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', searchParams);
-            setRooms(response.data.rooms); // Update the rooms state with response data
-        } catch (error) {
-            console.error("Error fetching rooms:", error);
-        }
-    };
-
-    // Handle input changes for search parameters
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setSearchParams((prevParams) => ({ ...prevParams, [name]: value }));
-    };
-
-    // Submit form to fetch rooms
-    const handleSearch = (e) => {
-        e.preventDefault();
-        fetchRooms();
     };
 
     return (
@@ -87,39 +53,38 @@ const Matches = () => {
                 </button>
             </div>
 
-            {/* Search Form */}
-            <form className="search-form" onSubmit={handleSearch}>
-                <input type="text" name="location" value={searchParams.location} onChange={handleInputChange} placeholder="City" required />
-                <input type="text" name="minRent" value={searchParams.minRent} onChange={handleInputChange} placeholder="Min Rent" />
-                <input type="text" name="maxRent" value={searchParams.maxRent} onChange={handleInputChange} placeholder="Max Rent" />
-                <input type="text" name="roomType" value={searchParams.roomType} onChange={handleInputChange} placeholder="Room Type" />
-                <input type="date" name="availableFrom" value={searchParams.availableFrom} onChange={handleInputChange} placeholder="Available From" />
-                <button type="submit">Search</button>
-            </form>
-
-            {/* Rooms List */}
             <div className="matches-list">
-                {rooms.length > 0 ? (
-                    rooms.map((room, index) => (
-                        <div key={index} className="match-tile" onClick={() => handleTileClick(room)}>
-                            <img src={Person} alt="Profile" className="profile-icon" />
-                            <div className="match-details">
-                                <p className="name">{room.owner.firstName} {room.owner.lastName}</p>
-                                <p className="room-type">{room.roomType}</p>
-                            </div>
-                            <p className="budget">{room.rent}</p>
-                            <p className="status">{room.availableFrom}</p>
-                        </div>
-                    ))
-                ) : (
-                    <p>No rooms available</p>
-                )}
+                <div className="match-tile" onClick={() => handleTileClick({ name: 'John Doe', roomType: 'Shared Room', budget: 1200, status: 'Available' })}>
+                    <img src={Person} alt="Profile" className="profile-icon" />
+                    <div className="match-details">
+                        <p className="name">John Doe</p>
+                        <p className="room-type">Shared Room</p>
+                    </div>
+                    <p className="budget">1200</p>
+                    <p className="status">Available</p>
+                </div>
+
+                <div className="match-tile" onClick={() => handleTileClick({ name: 'Jane Smith', roomType: 'Private Room', budget: 900, status: 'Booked' })}>
+                    <img src={Person} alt="Profile" className="profile-icon" />
+                    <div className="match-details">
+                        <p className="name">Jane Smith</p>
+                        <p className="room-type">Private Room</p>
+                    </div>
+                    <p className="budget">900</p>
+                    <p className="status">Booked</p>
+                </div>
+
+                {/* Add more match tiles as needed */}
             </div>
 
             {selectedMatch && (
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <p>Add all relevant information about the user, including pets & smoking preferences here</p>
+                        {/* <h2>{selectedMatch.name}</h2>
+                        <p>Room Type: {selectedMatch.roomType}</p>
+                        <p>Budget: {selectedMatch.budget}</p>
+                        <p>Status: {selectedMatch.status}</p> */}
                         <div className="modal-buttons">
                             <button className="connect-button">Connect</button>
                             <button className="close-button" onClick={closeModal}>Close</button>
