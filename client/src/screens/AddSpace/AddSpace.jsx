@@ -45,6 +45,12 @@ const AddSpace = () => {
   
       try {
         const token = localStorage.getItem("token");
+          if (!token) {
+              console.error("Token is missing. Please log in again.");
+              alert("You are not logged in. Redirecting to login.");
+              navigate('/signin');  // Redirect to login if token is missing
+              return;
+          }
         const response = await fetch(
           "https://nestmatebackend.ktandon2004.workers.dev/rooms",
           {
