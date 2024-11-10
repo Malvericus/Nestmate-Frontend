@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { User, House, Calendar, Cigarette, Cat, CircleDollarSign } from 'lucide-react';
 import Person from "../../assets/PersonIcon.svg";
 import './UserProfile.css';
 
 const UserProfile = () => {
-  const [successMessage, setSuccessMessage] = useState('');
+  const [showModal, setShowModal] = useState(false);
   const [userData, setUserData] = useState({
     ageRange: { min: 18, max: 100 },
     gender: 'any',
@@ -27,10 +27,11 @@ const UserProfile = () => {
   };
 
   const handleSaveChanges = () => {
-    setSuccessMessage('Changes saved successfully!');
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 2000);
+    setShowModal(true); // Show the modal after saving changes
+  };
+
+  const closeModal = () => {
+    setShowModal(false); // Hide modal when closed
   };
 
   return (
@@ -109,8 +110,21 @@ const UserProfile = () => {
 
       <div className="save-section">
         <button onClick={handleSaveChanges}>Save Changes</button>
-        {successMessage && <p className="success-message">{successMessage}</p>}
       </div>
+
+      {/* Modal for "Changes Saved" */}
+      {showModal && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Changes Saved!</h3>
+            <p>Your changes have been saved successfully.</p>
+            <button onClick={closeModal} className="close-modal-btn">Close</button>
+            <Link to="/dashboard" className="view-dashboard-btn">
+              View Dashboard
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

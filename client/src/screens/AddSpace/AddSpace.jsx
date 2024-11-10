@@ -19,6 +19,8 @@ const AddSpace = () => {
         amenities: "",
         photosUrl: []
     });
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -29,6 +31,37 @@ const AddSpace = () => {
         const files = Array.from(e.target.files);
         const fileUrls = files.map(file => URL.createObjectURL(file));
         setFormData({ ...formData, photosUrl: fileUrls });
+    };
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+
+        try {
+            const response = await fetch("https://nestmatebackend.ktandon2004.workers.dev/rooms", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                setError(`Error ${response.status}: ${errorData.error || 'Failed to add room'}`);
+                setLoading(false);
+                return;
+            }
+
+            // Redirect to Dashboard after successful room submission
+            navigate("/dashboard");
+        } catch (err) {
+            setError("Network error occurred");
+            console.error("Submit error:", err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -100,6 +133,11 @@ const AddSpace = () => {
                 </div>
             </div>
 
+            <button onClick={handleSubmit} disabled={loading} className="share-room-button">
+                {loading ? "Sharing..." : "Share Room"}
+            </button>
+            {error && <p className="error-text">{error}</p>}
+
             <footer className="bottom-nav">
                 <button className="nav-button" onClick={() => navigate('/dashboard')}>
                     <Home size={24} color="#6c7b8a" />
@@ -113,7 +151,7 @@ const AddSpace = () => {
                 <button className="nav-button" onClick={() => navigate('/messages')}>
                     <Users size={24} color="#6c7b8a" />
                 </button>
-                <button className="nav-button" onClick={() => navigate('/messages')}>
+                <button className="nav-button" onClick={() => navigate('/chat/:id')}>
                     <MessageSquare size={24} color="#243c5a" />
                 </button>
             </footer>

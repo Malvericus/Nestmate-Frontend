@@ -120,7 +120,7 @@ const ChatConnections = () => {
           <button className="nav-button" onClick={() => navigate('/add')}>
             <PlusCircle size={24} color="#6c7b8a" />
           </button>
-          <button className="nav-button" onClick={() => navigate('/user')}>
+          <button className="nav-button" onClick={() => navigate('/messages')}>
             <Users size={24} color="#6c7b8a" />
           </button>
           <button className="nav-button" onClick={() => navigate('/chat/:id')}>
