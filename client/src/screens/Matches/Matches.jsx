@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Person from "../../assets/PersonIcon.svg";
 import HomeIcon from "../../assets/HomeIcon.svg";
@@ -9,41 +9,14 @@ const Matches = () => {
     const [activeTab, setActiveTab] = useState('search');
     const [selectedMatch, setSelectedMatch] = useState(null);
     const [rooms, setRooms] = useState([]);
-    const [formData, setFormData] = useState({
-        location: "",
-        minRent: "1000",
-        maxRent: "3000",
-        roomType: "2BHK",
-        availableFrom: "2024-11-01",
-        page: 1,
-        limit: 10
+    const [filters, setFilters] = useState({
+        location: '',
+        minRent: '',
+        maxRent: '',
+        roomType: '',
+        availableFrom: ''
     });
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const fetchRooms = async () => {
-            try {
-                const response = await fetch("https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch rooms");
-                }
-
-                const data = await response.json();
-                setRooms(data.rooms);
-            } catch (error) {
-                console.error("Error fetching rooms:", error);
-            }
-        };
-
-        fetchRooms();
-    }, [formData]);
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
@@ -56,6 +29,33 @@ const Matches = () => {
 
     const closeModal = () => {
         setSelectedMatch(null);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            [name]: value
+        }));
+    };
+
+    const searchRooms = async () => {
+        const token = localStorage.getItem('token');
+        const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(filters)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setRooms(data.rooms);
+        } else {
+            console.error('Failed to fetch rooms');
+        }
     };
 
     return (
@@ -88,16 +88,63 @@ const Matches = () => {
                 </button>
             </div>
 
+            {/* Search Filters Section */}
+            <div className="filters-container">
+                <input
+                    type="text"
+                    name="location"
+                    placeholder="Location"
+                    value={filters.location}
+                    onChange={handleInputChange}
+                    className="filter-input"
+                />
+                <input
+                    type="number"
+                    name="minRent"
+                    placeholder="Min Rent"
+                    value={filters.minRent}
+                    onChange={handleInputChange}
+                    className="filter-input"
+                />
+                <input
+                    type="number"
+                    name="maxRent"
+                    placeholder="Max Rent"
+                    value={filters.maxRent}
+                    onChange={handleInputChange}
+                    className="filter-input"
+                />
+                <select
+                    name="roomType"
+                    value={filters.roomType}
+                    onChange={handleInputChange}
+                    className="filter-select"
+                >
+                    <option value="">Select Room Type</option>
+                    <option value="1BHK">1BHK</option>
+                    <option value="2BHK">2BHK</option>
+                    <option value="Shared">Shared</option>
+                </select>
+                <input
+                    type="date"
+                    name="availableFrom"
+                    value={filters.availableFrom}
+                    onChange={handleInputChange}
+                    className="filter-input"
+                />
+                <button onClick={searchRooms} className="search-button">Search</button>
+            </div>
+
             <div className="matches-list">
                 {rooms.map((room, index) => (
-                    <div className="match-tile" key={index} onClick={() => handleTileClick(room)}>
+                    <div key={index} className="match-tile" onClick={() => handleTileClick(room)}>
                         <img src={Person} alt="Profile" className="profile-icon" />
                         <div className="match-details">
                             <p className="name">{room.owner.firstName} {room.owner.lastName}</p>
                             <p className="room-type">{room.roomType}</p>
                         </div>
                         <p className="budget">{room.rent}</p>
-                        <p className="status">{room.status}</p>
+                        <p className="status">Available</p>
                     </div>
                 ))}
             </div>
@@ -105,7 +152,10 @@ const Matches = () => {
             {selectedMatch && (
                 <div className="modal-overlay">
                     <div className="modal-content">
-                        <p>Add all relevant information about the user, including pets & smoking preferences here</p>
+                        <h2>{selectedMatch.owner.firstName} {selectedMatch.owner.lastName}</h2>
+                        <p>Room Type: {selectedMatch.roomType}</p>
+                        <p>Budget: {selectedMatch.rent}</p>
+                        <p>Status: Available</p>
                         <div className="modal-buttons">
                             <button className="connect-button">Connect</button>
                             <button className="close-button" onClick={closeModal}>Close</button>
@@ -115,25 +165,14 @@ const Matches = () => {
             )}
 
             <footer className="bottom-nav">
-                <button className="nav-button" onClick={() => navigate('/dashboard')}>
-                    <Home size={24} color="#6c7b8a" />
-                </button>
-                <button className="nav-button" onClick={() => navigate('/discover')}>
-                    <Compass size={24} color="#6c7b8a" />
-                </button>
-                <button className="nav-button" onClick={() => navigate('/add')}>
-                    <PlusCircle size={24} color="#6c7b8a" />
-                </button>
-                <button className="nav-button" onClick={() => navigate('/messages')}>
-                    <Users size={24} color="#6c7b8a" />
-                </button>
-                <button className="nav-button" onClick={() => navigate('/chat/:id')}>
-                    <MessageSquare size={24} color="#243c5a" />
-                </button>
+                <button className="nav-button" onClick={() => navigate('/dashboard')}><Home size={24} color="#6c7b8a" /></button>
+                <button className="nav-button" onClick={() => navigate('/discover')}><Compass size={24} color="#6c7b8a" /></button>
+                <button className="nav-button" onClick={() => navigate('/add')}><PlusCircle size={24} color="#6c7b8a" /></button>
+                <button className="nav-button" onClick={() => navigate('/messages')}><Users size={24} color="#6c7b8a" /></button>
+                <button className="nav-button" onClick={() => navigate('/chat/:id')}><MessageSquare size={24} color="#243c5a" /></button>
             </footer>
         </div>
     );
 };
 
 export default Matches;
- 
