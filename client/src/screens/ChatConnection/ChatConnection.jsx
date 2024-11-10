@@ -17,8 +17,8 @@ const API = {
       const result = await model.generateContent(message); 
       console.log("2")
       const response = result?.response || "No response received";
-      console.log("3 "+response)
-      console.log("API response:", response);
+      console.log("Full API response:", JSON.stringify(response, null, 2));
+      console.log("API result:", result);
       return response;
     } catch (error) {
       console.error("Error fetching chatbot response:", error);
