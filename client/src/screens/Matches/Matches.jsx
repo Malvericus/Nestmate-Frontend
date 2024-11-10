@@ -43,7 +43,7 @@ const Matches = () => {
         const token = localStorage.getItem('token');
         console.log(token)
         const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
