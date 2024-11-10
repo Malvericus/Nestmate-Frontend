@@ -2,29 +2,29 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Person from "../../assets/PersonIcon.svg";
 import HomeIcon from "../../assets/HomeIcon.svg";
-import { Bell, Home, Compass, PlusCircle, Users, MessageSquare, PlusCircle as UploadIcon } from 'lucide-react';
+import { Bell, Home, Compass, PlusCircle, Users, MessageSquare } from 'lucide-react';
 import "./AddSpace.css";
 
 const AddSpace = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        title: "",
-        description: "",
-        subLocality: "",
-        city: "",
-        state: "",
-        pincode: "",
-        rent: "",
-        roomType: "",
-        amenities: "",
-        photosUrl: []
+      title: '',
+      description: '',
+      subLocality: '',
+      city: '',
+      state: '',
+      pincode: '',
+      rent: '',
+      roomType: '',
+      amenities: '',
+      photosUrl: [],  // This will hold sample image URL for the demo
+      availableFrom: '',
     });
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-
+  
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+      const { name, value } = e.target;
+      setFormData({ ...formData, [name]: value });
     };
 
     const handleFileUpload = (e) => {
@@ -32,36 +32,45 @@ const AddSpace = () => {
         const fileUrls = files.map(file => URL.createObjectURL(file));
         setFormData({ ...formData, photosUrl: fileUrls });
     };
-
+  
     const handleSubmit = async () => {
-        setLoading(true);
+      setLoading(true);
+  
+      const ImageUrl = "https://images.unsplash.com/photo-1499916078039-922301b0eb9b?q=80&w=2585&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+  
+      const roomData = {
+        ...formData,
+        photosUrl: [ImageUrl],  
+      };
+  
+      try {
         const token = localStorage.getItem("token");
-
-        try {
-            const response = await fetch("https://nestmatebackend.ktandon2004.workers.dev/rooms", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                setError(`Error ${response.status}: ${errorData.error || 'Failed to add room'}`);
-                setLoading(false);
-                return;
-            }
-
-            // Redirect to Dashboard after successful room submission
-            navigate("/dashboard");
-        } catch (err) {
-            setError("Network error occurred");
-            console.error("Submit error:", err);
-        } finally {
-            setLoading(false);
+        const response = await fetch(
+          "https://nestmatebackend.ktandon2004.workers.dev/rooms",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(roomData),
+          }
+        );
+  
+        if (response.ok) {
+          const data = await response.json();
+          if (data.message === "Room created successfully") {
+            navigate('/dashboard');  
+          }
+        } else {
+          alert("Failed to share room. Please try again.");
         }
+      } catch (error) {
+        console.error("Error creating room:", error);
+        alert("An error occurred while sharing the room.");
+      } finally {
+        setLoading(false);
+      }
     };
 
     return (
@@ -131,12 +140,20 @@ const AddSpace = () => {
                         <option value="Any">Any</option>
                     </select>
                 </div>
+                <div className="tile small-tile">
+                    <label>Available From</label>
+                    <input 
+                        type="date" 
+                        name="availableFrom" 
+                        value={formData.availableFrom} 
+                        onChange={handleChange} 
+                    />
+                </div>
             </div>
 
             <button onClick={handleSubmit} disabled={loading} className="share-room-button">
                 {loading ? "Sharing..." : "Share Room"}
             </button>
-            {error && <p className="error-text">{error}</p>}
 
             <footer className="bottom-nav">
                 <button className="nav-button" onClick={() => navigate('/dashboard')}>
