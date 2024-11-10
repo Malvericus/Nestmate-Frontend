@@ -41,7 +41,7 @@ const ChatConnections = () => {
         const data = await response.json();
         
         if (!data.apiKey) {
-          throw new Error('API key not found in response');
+          throw new Error('API key not found in response'+data);
         }
 
         // Initialize the Gemini AI client
