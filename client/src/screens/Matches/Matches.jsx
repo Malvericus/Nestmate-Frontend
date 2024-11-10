@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Person from "../../assets/PersonIcon.svg";
 import HomeIcon from "../../assets/HomeIcon.svg";
 import { Bell, Home, Compass, PlusCircle, Users, MessageSquare } from 'lucide-react';
@@ -9,18 +8,42 @@ import "./Matches.css";
 const Matches = () => {
     const [activeTab, setActiveTab] = useState('search');
     const [selectedMatch, setSelectedMatch] = useState(null);
-    const [rooms, setRooms] = useState([]); // State to store rooms data
-    const [searchParams, setSearchParams] = useState({
-        location: '',
-        minRent: '',
-        maxRent: '',
-        roomType: '',
-        availableFrom: '',
-        page: '1',
-        limit: '10',
+    const [rooms, setRooms] = useState([]);
+    const [formData, setFormData] = useState({
+        location: "",
+        minRent: "1000",
+        maxRent: "3000",
+        roomType: "2BHK",
+        availableFrom: "2024-11-01",
+        page: 1,
+        limit: 10
     });
-
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchRooms = async () => {
+            try {
+                const response = await fetch("https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch rooms");
+                }
+
+                const data = await response.json();
+                setRooms(data.rooms);
+            } catch (error) {
+                console.error("Error fetching rooms:", error);
+            }
+        };
+
+        fetchRooms();
+    }, [formData]);
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
@@ -33,28 +56,6 @@ const Matches = () => {
 
     const closeModal = () => {
         setSelectedMatch(null);
-    };
-
-    // Fetch rooms from the backend
-    const fetchRooms = async () => {
-        try {
-            const response = await axios.post('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', searchParams);
-            setRooms(response.data.rooms); // Update the rooms state with response data
-        } catch (error) {
-            console.error("Error fetching rooms:", error);
-        }
-    };
-
-    // Handle input changes for search parameters
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setSearchParams((prevParams) => ({ ...prevParams, [name]: value }));
-    };
-
-    // Submit form to fetch rooms
-    const handleSearch = (e) => {
-        e.preventDefault();
-        fetchRooms();
     };
 
     return (
@@ -87,33 +88,18 @@ const Matches = () => {
                 </button>
             </div>
 
-            {/* Search Form */}
-            <form className="search-form" onSubmit={handleSearch}>
-                <input type="text" name="location" value={searchParams.location} onChange={handleInputChange} placeholder="City" required />
-                <input type="text" name="minRent" value={searchParams.minRent} onChange={handleInputChange} placeholder="Min Rent" />
-                <input type="text" name="maxRent" value={searchParams.maxRent} onChange={handleInputChange} placeholder="Max Rent" />
-                <input type="text" name="roomType" value={searchParams.roomType} onChange={handleInputChange} placeholder="Room Type" />
-                <input type="date" name="availableFrom" value={searchParams.availableFrom} onChange={handleInputChange} placeholder="Available From" />
-                <button type="submit">Search</button>
-            </form>
-
-            {/* Rooms List */}
             <div className="matches-list">
-                {rooms.length > 0 ? (
-                    rooms.map((room, index) => (
-                        <div key={index} className="match-tile" onClick={() => handleTileClick(room)}>
-                            <img src={Person} alt="Profile" className="profile-icon" />
-                            <div className="match-details">
-                                <p className="name">{room.owner.firstName} {room.owner.lastName}</p>
-                                <p className="room-type">{room.roomType}</p>
-                            </div>
-                            <p className="budget">{room.rent}</p>
-                            <p className="status">{room.availableFrom}</p>
+                {rooms.map((room, index) => (
+                    <div className="match-tile" key={index} onClick={() => handleTileClick(room)}>
+                        <img src={Person} alt="Profile" className="profile-icon" />
+                        <div className="match-details">
+                            <p className="name">{room.owner.firstName} {room.owner.lastName}</p>
+                            <p className="room-type">{room.roomType}</p>
                         </div>
-                    ))
-                ) : (
-                    <p>No rooms available</p>
-                )}
+                        <p className="budget">{room.rent}</p>
+                        <p className="status">{room.status}</p>
+                    </div>
+                ))}
             </div>
 
             {selectedMatch && (
@@ -150,3 +136,4 @@ const Matches = () => {
 };
 
 export default Matches;
+ 
