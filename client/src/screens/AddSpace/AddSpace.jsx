@@ -45,6 +45,8 @@ const AddSpace = () => {
   
       try {
         const token = localStorage.getItem("token");
+        console.log(token)
+        console.log(JSON.stringify(roomData))
         const response = await fetch(
           "https://nestmatebackend.ktandon2004.workers.dev/rooms",
           {
