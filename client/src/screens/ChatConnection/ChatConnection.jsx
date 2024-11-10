@@ -14,7 +14,7 @@ const API = {
     try {
       console.log('Sending message to API:', message);
 
-      // Fetch API response without axios
+      // Fetch API response
       const response = await fetch('https://generativelanguage.googleapis.com/v1/tunedModels/chatm-djho3ni30kvg:generateContent', {
         method: 'POST',
         headers: {
@@ -34,9 +34,9 @@ const API = {
       });
 
       const result = await response.json();
-      console.log(result)
-      const botMessage = result?.contents?.[0]?.parts?.[0]?.text || 'No response received';
-      console.log(JSON.stringify(result))
+
+      // Extract the text content from the response
+      const botMessage = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received';
       console.log('API response:', botMessage);
 
       return botMessage;
@@ -46,6 +46,7 @@ const API = {
     }
   },
 };
+
 
 const ChatConnections = () => {
   const navigate = useNavigate();
