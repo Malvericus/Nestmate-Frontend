@@ -33,35 +33,50 @@ const Matches = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFilters((prevFilters) => ({
-            ...prevFilters,
-            [name]: value
-        }));
+    
+        setFilters((prevFilters) => {
+            // If the field is 'availableFrom', format the date as required
+            if (name === 'availableFrom' && value) {
+                const formattedDate = new Date(value).toISOString(); // Convert to ISO 8601 format
+                return {
+                    ...prevFilters,
+                    [name]: formattedDate
+                };
+            }
+    
+            // For other fields, retain the value as it is
+            return {
+                ...prevFilters,
+                [name]: value
+            };
+        });
     };
+    
 
     const searchRooms = async () => {
         const token = localStorage.getItem('token');
-        const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(filters)
-        });
-        console.log(JSON.stringify(filters))
-        console.log(response.ok)
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log(data)
-            console.log(data.rooms)
-            setRooms(data.rooms);
-        } else {
-            console.error('Failed to fetch rooms');
+        try {
+            const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/rooms/getrooms/city', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(filters)
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data); // Check data structure in console for debugging
+                setRooms(data.rooms);
+            } else {
+                console.error('Failed to fetch rooms');
+            }
+        } catch (error) {
+            console.error('Error fetching rooms:', error);
         }
     };
-
+    
     return (
         <div className="matches-container">
             <header className="matches-header">
