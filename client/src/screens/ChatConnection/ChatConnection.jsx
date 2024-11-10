@@ -7,39 +7,28 @@ import Input from './components/Input';
 import BotMessage from './components/BotMessage';
 import UserMessage from './components/UserMessage';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import "./Chatbot.css";
+import './Chatbot.css';
 
 const API = {
   GetChatbotResponse: async (model, message) => {
     try {
-      console.log("Sending message to API:", message);
+      console.log('Sending message to API:', message);
 
-      // Debugging: Check the model and its methods
-      console.log("Model object:", model);
-      if (typeof model.generateContent !== "function") {
-        throw new Error("generateContent is not a function on the model.");
+      // Check if the model has generateContent method
+      if (typeof model.generateContent !== 'function') {
+        throw new Error('generateContent is not a function on the model.');
       }
 
       const result = await model.generateContent(message);
-
-      // Store the stringified result
-      const resultString = JSON.stringify(result, null, 2);
-
-      // Log the entire stringified result
-
-      // Convert the string back to a JSON object
-      const resultJson = JSON.parse(resultString);
-
-      // Access the 'text' from the nested structure
-      const response = resultJson?.response?.candidates?.[0]?.content?.parts?.[0]?.text || "No response received";
-      console.log("API response:", response);
+      const response = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received';
+      console.log('API response:', response);
 
       return response;
     } catch (error) {
-      console.error("Error fetching chatbot response:", error);
-      return "Sorry, I couldn't process that. Error: " + error.message;
+      console.error('Error fetching chatbot response:', error);
+      return 'Sorry, I couldn\'t process that. Error: ' + error.message;
     }
-  }
+  },
 };
 
 const ChatConnections = () => {
@@ -55,7 +44,7 @@ const ChatConnections = () => {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-          }
+          },
         });
 
         if (!response.ok) {
@@ -66,12 +55,12 @@ const ChatConnections = () => {
         if (!data.apiKey) throw new Error('API key not found in response');
 
         const genAI = new GoogleGenerativeAI(data.apiKey);
-        const aiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        console.log("API Key obtained:", data.apiKey);
+        const aiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         setModel(aiModel);
         setIsLoading(false);
+        console.log('AI model initialized');
       } catch (error) {
-        console.error("Error initializing Google Generative AI:", error);
+        console.error('Error initializing Google Generative AI:', error);
         setIsLoading(false);
       }
     };
@@ -81,45 +70,38 @@ const ChatConnections = () => {
 
   useEffect(() => {
     const loadWelcomeMessage = async () => {
-      if (!model) return;
-
-      try {
-        const welcomeResponse = await API.GetChatbotResponse(model, "hi");
-        setMessages([
-          <BotMessage key="welcome" text={welcomeResponse} />
-        ]);
-        console.log("hio")
-      } catch (error) {
-        console.error("Error loading welcome message:", error);
+      if (model) {
+        try {
+          const welcomeResponse = await API.GetChatbotResponse(model, 'hi');
+          setMessages([<BotMessage key="welcome" text={welcomeResponse} />]);
+        } catch (error) {
+          console.error('Error loading welcome message:', error);
+        }
       }
     };
 
-    if (model) loadWelcomeMessage();
+    loadWelcomeMessage();
   }, [model]);
 
   const send = async (text) => {
     if (!text.trim() || !model) return;
 
     try {
-      setMessages(prev => [
-        ...prev,
-        <UserMessage key={`user-${prev.length}`} text={text} />
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        <UserMessage key={`user-${prevMessages.length}`} text={text} />,
       ]);
 
       const botResponse = await API.GetChatbotResponse(model, text);
-      setMessages(prev => [
-        ...prev,
-        <BotMessage key={`bot-${prev.length}`} text={botResponse} />
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        <BotMessage key={`bot-${prevMessages.length}`} text={botResponse} />,
       ]);
     } catch (error) {
-      console.error("Error sending message:", error);
-      // If API call fails, continue by adding a default response
-      setMessages(prev => [
-        ...prev,
-        <BotMessage 
-          key={`error-${prev.length}`} 
-          text="Sorry, I encountered an error processing your message." 
-        />
+      console.error('Error sending message:', error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        <BotMessage key={`error-${prevMessages.length}`} text="Sorry, I encountered an error processing your message." />,
       ]);
     }
   };
@@ -160,4 +142,3 @@ const ChatConnections = () => {
 };
 
 export default ChatConnections;
- 
