@@ -17,7 +17,7 @@ const AddSpace = () => {
       rent: '',
       roomType: '',
       amenities: '',
-      photosUrl: [],  // This will hold sample image URL for the demo
+      photosUrl: [],  
       availableFrom: '',
     });
     const [loading, setLoading] = useState(false);
@@ -36,7 +36,7 @@ const AddSpace = () => {
     const handleSubmit = async () => {
       setLoading(true);
   
-      const ImageUrl = "https://images.unsplash.com/photo-1499916078039-922301b0eb9b?q=80&w=2585&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+      const ImageUrl = "https://i.pinimg.com/236x/2d/0e/61/2d0e61b1f10ecda045fb674d7b5290e3.jpg";
   
       const roomData = {
         ...formData,
@@ -45,12 +45,6 @@ const AddSpace = () => {
   
       try {
         const token = localStorage.getItem("token");
-          if (!token) {
-              console.error("Token is missing. Please log in again.");
-              alert("You are not logged in. Redirecting to login.");
-              navigate('/signin');  // Redirect to login if token is missing
-              return;
-          }
         const response = await fetch(
           "https://nestmatebackend.ktandon2004.workers.dev/rooms",
           {
