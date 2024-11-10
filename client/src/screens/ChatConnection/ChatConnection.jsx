@@ -13,11 +13,8 @@ const API = {
   GetChatbotResponse: async (model, message) => {
     try {
       console.log("Sending message to API:", message);
-      // Generate content and wait for the response
       const result = await model.generateContent(message);
-      // Get the response text from the result
-      console.log(response)
-      const response = await result.response.text();
+      const response = result?.response || "No response received";
       console.log("API response:", response);
       return response;
     } catch (error) {
@@ -33,11 +30,9 @@ const ChatConnections = () => {
   const [model, setModel] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize the AI model
   useEffect(() => {
     const initializeAI = async () => {
       try {
-        // Fetch API key using PUT request
         const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/chats/getapi', {
           method: 'PUT',
           headers: {
@@ -50,18 +45,11 @@ const ChatConnections = () => {
         }
 
         const data = await response.json();
-        
-        if (!data.apiKey) {
-          throw new Error('API key not found in response');
-        }
+        if (!data.apiKey) throw new Error('API key not found in response');
 
-        // Initialize the Gemini AI client with the correct model
         const genAI = new GoogleGenerativeAI(data.apiKey);
-        // Use gemini-1.5-flash model as recommended in the docs
-        const aiModel = genAI.getGenerativeModel({ 
-          model: "gemini-1.5-flash"  // Changed from tunedModels/nestmateassistant-kfjyqmeqrlzr
-        });
-        console.log(apiKey)
+        const aiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        console.log("API Key obtained:", data.apiKey);
         setModel(aiModel);
         setIsLoading(false);
       } catch (error) {
@@ -73,18 +61,14 @@ const ChatConnections = () => {
     initializeAI();
   }, []);
 
-  // Load welcome message after model is initialized
   useEffect(() => {
     const loadWelcomeMessage = async () => {
       if (!model) return;
-      
+
       try {
         const welcomeResponse = await API.GetChatbotResponse(model, "hi");
         setMessages([
-          <BotMessage 
-            key="welcome"
-            text={welcomeResponse}
-          />
+          <BotMessage key="welcome" text={welcomeResponse} />
         ]);
       } catch (error) {
         console.error("Error loading welcome message:", error);
@@ -94,21 +78,16 @@ const ChatConnections = () => {
     if (model) loadWelcomeMessage();
   }, [model]);
 
-  // Send message function
   const send = async (text) => {
     if (!text.trim() || !model) return;
 
     try {
-      // Add user message immediately
       setMessages(prev => [
         ...prev,
         <UserMessage key={`user-${prev.length}`} text={text} />
       ]);
 
-      // Get bot response
       const botResponse = await API.GetChatbotResponse(model, text);
-      
-      // Add bot message
       setMessages(prev => [
         ...prev,
         <BotMessage key={`bot-${prev.length}`} text={botResponse} />
@@ -160,4 +139,5 @@ const ChatConnections = () => {
   );
 };
 
-export default ChatConnections; 
+export default ChatConnections;
+ 
