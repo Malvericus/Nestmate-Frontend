@@ -104,9 +104,9 @@ const Dashboard = () => {
               <span className="badge">Techie</span>
             </div>
             <div className="card-content">
-              <h2>{room.title || "Semi Furnished All Amenities"}</h2>
-              <p>{room.location || "Bella Cassa Phase 2 B"}</p>
-              <p className="sharing">{room.roomType || "SHARING"}</p>
+              <h2>{room.title}</h2>
+              <p>{room.location}</p>
+              <p className="sharing">{room.roomType}</p>
               <p className="user-details">
                 Engineering Bachelor, Sophomore at Symbiosis Institute of Technology
               </p>
