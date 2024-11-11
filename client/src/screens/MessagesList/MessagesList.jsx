@@ -93,18 +93,19 @@ const Messages = () => {
             setSendingMessage(true);
             const { token, userId } = getCredentials();
             
+            // Create the new message with current timestamp
             const newMessage = {
-                content: input,
+                content: input.trim(),
                 senderId: userId,
                 timestamp: new Date().toLocaleTimeString(),
-                id: Date.now().toString(),
-                pending: true // Mark as pending until confirmed
+                id: Date.now().toString()
             };
 
-            // Optimistically add the message
-            setMessages(prev => [...prev, newMessage]);
+            // Clear input field and update messages state immediately
             setInput("");
+            setMessages(prev => [...prev, newMessage]);
 
+            // Send the message to the server
             const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${selectedMatchId}`, {
                 method: 'POST',
                 headers: {
@@ -112,23 +113,14 @@ const Messages = () => {
                     'User-ID': userId,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ content: input }),
+                body: JSON.stringify({ content: input.trim() }),
             });
             
             if (!response.ok) {
-                // If the message failed to send, remove it from the UI
+                // If the message failed to send, remove it from the messages array
                 setMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
                 throw new Error("Failed to send message");
             }
-
-            // Update the message to remove pending status
-            setMessages(prev => 
-                prev.map(msg => 
-                    msg.id === newMessage.id 
-                        ? { ...msg, pending: false }
-                        : msg
-                )
-            );
 
         } catch (error) {
             console.error("Error sending message:", error);
@@ -146,15 +138,36 @@ const Messages = () => {
 
     return (
         <div className="messages-container">
-            {/* Header section remains the same */}
             <header className="messages-header">
-                {/* ... existing header code ... */}
+                <div className="header-navbar">
+                    <div><img src={HomeIcon} alt="logo" className="logo" /></div>
+                    <h1>Connection Messages</h1>
+                    <div className="profile-icons">
+                        <button className="profile-picture" onClick={() => navigate('/user')}>
+                            <img src={Person} alt="User Profile" />
+                        </button>
+                        <Bell className="notification-icon" size={24} color="#6c7b8a" />
+                    </div>
+                </div>
             </header>
 
             <div className="content-section">
-                {/* Sidebar section remains the same */}
                 <aside className="sidebar-nav">
-                    {/* ... existing sidebar code ... */}
+                    <button className="nav-button" onClick={() => navigate('/dashboard')}>
+                        <Home size={24} color="#6c7b8a" />
+                    </button>
+                    <button className="nav-button" onClick={() => navigate('/discover')}>
+                        <Compass size={24} color="#6c7b8a" />
+                    </button>
+                    <button className="nav-button" onClick={() => navigate('/add')}>
+                        <PlusCircle size={24} color="#6c7b8a" />
+                    </button>
+                    <button className="nav-button" onClick={() => navigate('/user')}>
+                        <Users size={24} color="#6c7b8a" />
+                    </button>
+                    <button className="nav-button" onClick={() => navigate('/chat/:id')}>
+                        <MessageSquare size={24} color="#243c5a" />
+                    </button>
                 </aside>
 
                 <div className="chat-card">
@@ -186,7 +199,7 @@ const Messages = () => {
                                             return (
                                                 <div 
                                                     key={msg.id || index} 
-                                                    className={`chat-bubble ${msg.senderId === userId ? 'my-message' : 'their-message'} ${msg.pending ? 'pending' : ''}`}
+                                                    className={`chat-bubble ${msg.senderId === userId ? 'my-message' : 'their-message'}`}
                                                 >
                                                     <p>{msg.content}</p>
                                                     <span className="timestamp">{msg.timestamp}</span>
