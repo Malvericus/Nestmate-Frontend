@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Person from "../../assets/PersonIcon.svg";
 import HomeIcon from "../../assets/HomeIcon.svg";
@@ -12,53 +12,65 @@ const Messages = () => {
     const [matches, setMatches] = useState([]);
     
     const navigate = useNavigate();
-    
-    const token = localStorage.getItem("token");  // Assuming token is stored in localStorage
+
+    // Helper function to get credentials
+    const getCredentials = () => {
+        const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("userId");
+        if (!token || !userId) {
+            throw new Error("Authentication credentials not found");
+        }
+        return { token, userId };
+    };
 
     // Fetch all matches
-    useEffect(() => {
-        const fetchMatches = async () => {
-            console.log(token)
-            try {
-                const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/matches', {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                if (!response.ok) {
-                    throw new Error("Failed to fetch matches");
-                }
-
-                const data = await response.json();
-                setMatches(data.matches);
-                console.log("fetch matches: "+data.matches)
-
-            } catch (error) {
-                console.error("Error fetching matches:", error);
+    const fetchMatches = async () => {
+        try {
+            const { token, userId } = getCredentials();
+            const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/matches', {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'User-ID': userId
+                },
+            });
+            if (!response.ok) {
+                throw new Error("Failed to fetch matches");
             }
-        };
-        fetchMatches();
-    }, [token]);
+
+            const data = await response.json();
+            setMatches(data.matches);
+            console.log("fetch matches: " + JSON.stringify(data.matches));
+        } catch (error) {
+            console.error("Error fetching matches:", error);
+            if (error.message === "Authentication credentials not found") {
+                navigate('/login');
+            }
+        }
+    };
 
     // Fetch chat messages for selected match
     const fetchChatMessages = async (matchId) => {
         try {
+            const { token, userId } = getCredentials();
             const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
+                    'User-ID': userId
                 },
             });
             if (!response.ok) {
                 throw new Error("Failed to fetch chat messages");
             }
-            console.log(response)
             const data = await response.json();
-            console.log("fetchChat: "+ data)
+            console.log("fetchChat: " + JSON.stringify(data));
             setMessages(data.messages);
         } catch (error) {
             console.error("Error fetching chat messages:", error);
+            if (error.message === "Authentication credentials not found") {
+                navigate('/login');
+            }
         }
     };
 
@@ -71,30 +83,43 @@ const Messages = () => {
     // Send new message
     const handleSendMessage = async () => {
         if (input.trim()) {
-            const matchId = selectedUser?.matchId;  // Assuming you get matchId from the selected user
+            const matchId = selectedUser?.matchId;
             try {
+                const { token, userId } = getCredentials();
                 const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, {
                     method: 'POST',
                     headers: {
                         Authorization: `Bearer ${token}`,
+                        'User-ID': userId,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ content: input }),
                 });
-                console.log(matchId)
 
                 if (!response.ok) {
                     throw new Error("Failed to send message");
                 }
 
                 // Update messages after sending
-                setMessages([...messages, { content: input, senderId: "me", timestamp: new Date().toLocaleTimeString() }]);
+                setMessages([...messages, { 
+                    content: input, 
+                    senderId: userId, 
+                    timestamp: new Date().toLocaleTimeString() 
+                }]);
                 setInput("");
             } catch (error) {
                 console.error("Error sending message:", error);
+                if (error.message === "Authentication credentials not found") {
+                    navigate('/login');
+                }
             }
         }
     };
+
+    // Initial fetch of matches
+    React.useEffect(() => {
+        fetchMatches();
+    }, []);
 
     return (
         <div className="messages-container">
@@ -149,15 +174,20 @@ const Messages = () => {
                     <div className="chat-screen">
                         {selectedUser ? (
                             <>
-                                <div className="chat-header">{selectedUser.firstName} {selectedUser.lastName}</div>
+                                <div className="chat-header">
+                                    {selectedUser.firstName} {selectedUser.lastName}
+                                </div>
                                 <div className="chat-messages">
                                     {messages.length > 0 ? (
-                                        messages.map((msg, index) => (
-                                            <div key={index} className={`chat-bubble ${msg.senderId === "me" ? 'my-message' : 'their-message'}`}>
-                                                <p>{msg.content}</p>
-                                                <span className="timestamp">{msg.timestamp}</span>
-                                            </div>
-                                        ))
+                                        messages.map((msg, index) => {
+                                            const { userId } = getCredentials();
+                                            return (
+                                                <div key={index} className={`chat-bubble ${msg.senderId === userId ? 'my-message' : 'their-message'}`}>
+                                                    <p>{msg.content}</p>
+                                                    <span className="timestamp">{msg.timestamp}</span>
+                                                </div>
+                                            );
+                                        })
                                     ) : (
                                         <p>No messages yet.</p>
                                     )}
