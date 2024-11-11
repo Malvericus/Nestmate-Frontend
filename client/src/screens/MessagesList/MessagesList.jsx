@@ -40,7 +40,7 @@ const Messages = () => {
             }
 
             const data = await response.json();
-            setMatches(data.matches);
+            setMatches(Array.isArray(data.matches) ? data.matches : []);
         } catch (error) {
             console.error("Error fetching matches:", error);
             if (error.message === "Authentication credentials not found") {
@@ -64,7 +64,8 @@ const Messages = () => {
                 throw new Error("Failed to fetch chat messages");
             }
             const data = await response.json();
-            setMessages(data.messages);
+            // Ensure messages is always an array
+            setMessages(Array.isArray(data.messages) ? data.messages : []);
         } catch (error) {
             console.error("Error fetching chat messages:", error);
             if (error.message === "Authentication credentials not found") {
@@ -76,32 +77,15 @@ const Messages = () => {
     // Handle user click to view chat messages
     const handleUserClick = async (user, matchId) => {
         setSelectedUser(user);
-        setSelectedMatchId(matchId); // Store the matchId
+        setSelectedMatchId(matchId);
         await fetchChatMessages(matchId);
-    };
-
-    // Get current match details
-    const getCurrentMatchDetails = () => {
-        if (!selectedMatchId) {
-            throw new Error("No match selected");
-        }
-        const match = matches.find(m => m.id === selectedMatchId);
-        if (!match) {
-            throw new Error("Match not found");
-        }
-        return match;
     };
 
     // Send new message
     const handleSendMessage = async () => {
-        if (!input.trim()) return;
+        if (!input.trim() || !selectedMatchId) return;
         
         try {
-            // Ensure we have a selected match
-            if (!selectedMatchId) {
-                throw new Error("No match selected");
-            }
-
             const { token, userId } = getCredentials();
             const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${selectedMatchId}`, {
                 method: 'POST',
@@ -117,20 +101,24 @@ const Messages = () => {
                 throw new Error("Failed to send message");
             }
 
-            // Update messages after sending
-            setMessages([...messages, { 
-                content: input, 
-                senderId: userId, 
-                timestamp: new Date().toLocaleTimeString() 
-            }]);
+            const newMessage = {
+                content: input,
+                senderId: userId,
+                timestamp: new Date().toLocaleTimeString(),
+                id: Date.now().toString() // Add a unique ID for the message
+            };
+
+            // Ensure messages is an array before spreading
+            const currentMessages = Array.isArray(messages) ? messages : [];
+            setMessages([...currentMessages, newMessage]);
             setInput("");
+            
+            // Optionally fetch the latest messages to ensure sync
+            await fetchChatMessages(selectedMatchId);
         } catch (error) {
             console.error("Error sending message:", error);
             if (error.message === "Authentication credentials not found") {
                 navigate('/login');
-            } else if (error.message === "No match selected") {
-                console.error("Please select a conversation first");
-                // You might want to show this error to the user in the UI
             }
         }
     };
@@ -139,8 +127,7 @@ const Messages = () => {
     React.useEffect(() => {
         fetchMatches();
     }, []);
- 
-    
+
     return (
         <div className="messages-container">
             <header className="messages-header">
@@ -198,11 +185,11 @@ const Messages = () => {
                                     {selectedUser.firstName} {selectedUser.lastName}
                                 </div>
                                 <div className="chat-messages">
-                                    {messages.length > 0 ? (
+                                    {Array.isArray(messages) && messages.length > 0 ? (
                                         messages.map((msg, index) => {
                                             const { userId } = getCredentials();
                                             return (
-                                                <div key={index} className={`chat-bubble ${msg.senderId === userId ? 'my-message' : 'their-message'}`}>
+                                                <div key={msg.id || index} className={`chat-bubble ${msg.senderId === userId ? 'my-message' : 'their-message'}`}>
                                                     <p>{msg.content}</p>
                                                     <span className="timestamp">{msg.timestamp}</span>
                                                 </div>
@@ -218,7 +205,12 @@ const Messages = () => {
                                         placeholder="Type a message..."
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                        onKeyPress={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                handleSendMessage();
+                                            }
+                                        }}
                                     />
                                     <button onClick={handleSendMessage}>Send</button>
                                 </div>
