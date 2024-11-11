@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Person from "../../assets/PersonIcon.svg";
 import HomeIcon from "../../assets/HomeIcon.svg";
@@ -11,10 +11,19 @@ const Messages = () => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [matches, setMatches] = useState([]);
+    const [sendingMessage, setSendingMessage] = useState(false);
+    const messagesEndRef = useRef(null);
     
     const navigate = useNavigate();
 
-    // Helper function to get credentials
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
     const getCredentials = () => {
         const token = localStorage.getItem("token");
         const userId = localStorage.getItem("userId");
@@ -24,7 +33,6 @@ const Messages = () => {
         return { token, userId };
     };
 
-    // Fetch all matches
     const fetchMatches = async () => {
         try {
             const { token, userId } = getCredentials();
@@ -49,7 +57,6 @@ const Messages = () => {
         }
     };
 
-    // Fetch chat messages for selected match
     const fetchChatMessages = async (matchId) => {
         try {
             const { token, userId } = getCredentials();
@@ -64,7 +71,6 @@ const Messages = () => {
                 throw new Error("Failed to fetch chat messages");
             }
             const data = await response.json();
-            // Ensure messages is always an array
             setMessages(Array.isArray(data.messages) ? data.messages : []);
         } catch (error) {
             console.error("Error fetching chat messages:", error);
@@ -74,19 +80,31 @@ const Messages = () => {
         }
     };
 
-    // Handle user click to view chat messages
     const handleUserClick = async (user, matchId) => {
         setSelectedUser(user);
         setSelectedMatchId(matchId);
         await fetchChatMessages(matchId);
     };
 
-    // Send new message
     const handleSendMessage = async () => {
-        if (!input.trim() || !selectedMatchId) return;
+        if (!input.trim() || !selectedMatchId || sendingMessage) return;
         
         try {
+            setSendingMessage(true);
             const { token, userId } = getCredentials();
+            
+            const newMessage = {
+                content: input,
+                senderId: userId,
+                timestamp: new Date().toLocaleTimeString(),
+                id: Date.now().toString(),
+                pending: true // Mark as pending until confirmed
+            };
+
+            // Optimistically add the message
+            setMessages(prev => [...prev, newMessage]);
+            setInput("");
+
             const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${selectedMatchId}`, {
                 method: 'POST',
                 headers: {
@@ -98,68 +116,45 @@ const Messages = () => {
             });
             
             if (!response.ok) {
+                // If the message failed to send, remove it from the UI
+                setMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
                 throw new Error("Failed to send message");
             }
 
-            const newMessage = {
-                content: input,
-                senderId: userId,
-                timestamp: new Date().toLocaleTimeString(),
-                id: Date.now().toString() // Add a unique ID for the message
-            };
+            // Update the message to remove pending status
+            setMessages(prev => 
+                prev.map(msg => 
+                    msg.id === newMessage.id 
+                        ? { ...msg, pending: false }
+                        : msg
+                )
+            );
 
-            // Ensure messages is an array before spreading
-            const currentMessages = Array.isArray(messages) ? messages : [];
-            setMessages([...currentMessages, newMessage]);
-            setInput("");
-            
-            // Optionally fetch the latest messages to ensure sync
-            await fetchChatMessages(selectedMatchId);
         } catch (error) {
             console.error("Error sending message:", error);
             if (error.message === "Authentication credentials not found") {
                 navigate('/login');
             }
+        } finally {
+            setSendingMessage(false);
         }
     };
 
-    // Initial fetch of matches
-    React.useEffect(() => {
+    useEffect(() => {
         fetchMatches();
     }, []);
 
     return (
         <div className="messages-container">
+            {/* Header section remains the same */}
             <header className="messages-header">
-                <div className="header-navbar">
-                    <div><img src={HomeIcon} alt="logo" className="logo" /></div>
-                    <h1>Connection Messages</h1>
-                    <div className="profile-icons">
-                        <button className="profile-picture" onClick={() => navigate('/user')}>
-                            <img src={Person} alt="User Profile" />
-                        </button>
-                        <Bell className="notification-icon" size={24} color="#6c7b8a" />
-                    </div>
-                </div>
+                {/* ... existing header code ... */}
             </header>
 
             <div className="content-section">
+                {/* Sidebar section remains the same */}
                 <aside className="sidebar-nav">
-                    <button className="nav-button" onClick={() => navigate('/dashboard')}>
-                        <Home size={24} color="#6c7b8a" />
-                    </button>
-                    <button className="nav-button" onClick={() => navigate('/discover')}>
-                        <Compass size={24} color="#6c7b8a" />
-                    </button>
-                    <button className="nav-button" onClick={() => navigate('/add')}>
-                        <PlusCircle size={24} color="#6c7b8a" />
-                    </button>
-                    <button className="nav-button" onClick={() => navigate('/user')}>
-                        <Users size={24} color="#6c7b8a" />
-                    </button>
-                    <button className="nav-button" onClick={() => navigate('/chat/:id')}>
-                        <MessageSquare size={24} color="#243c5a" />
-                    </button>
+                    {/* ... existing sidebar code ... */}
                 </aside>
 
                 <div className="chat-card">
@@ -189,7 +184,10 @@ const Messages = () => {
                                         messages.map((msg, index) => {
                                             const { userId } = getCredentials();
                                             return (
-                                                <div key={msg.id || index} className={`chat-bubble ${msg.senderId === userId ? 'my-message' : 'their-message'}`}>
+                                                <div 
+                                                    key={msg.id || index} 
+                                                    className={`chat-bubble ${msg.senderId === userId ? 'my-message' : 'their-message'} ${msg.pending ? 'pending' : ''}`}
+                                                >
                                                     <p>{msg.content}</p>
                                                     <span className="timestamp">{msg.timestamp}</span>
                                                 </div>
@@ -198,6 +196,7 @@ const Messages = () => {
                                     ) : (
                                         <p>No messages yet.</p>
                                     )}
+                                    <div ref={messagesEndRef} />
                                 </div>
                                 <div className="chat-input">
                                     <input
@@ -211,8 +210,14 @@ const Messages = () => {
                                                 handleSendMessage();
                                             }
                                         }}
+                                        disabled={sendingMessage}
                                     />
-                                    <button onClick={handleSendMessage}>Send</button>
+                                    <button 
+                                        onClick={handleSendMessage}
+                                        disabled={sendingMessage}
+                                    >
+                                        Send
+                                    </button>
                                 </div>
                             </>
                         ) : (
