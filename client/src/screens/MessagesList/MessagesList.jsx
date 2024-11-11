@@ -18,6 +18,7 @@ const Messages = () => {
     // Fetch all matches
     useEffect(() => {
         const fetchMatches = async () => {
+            console.log(token)
             try {
                 const response = await fetch('https://nestmatebackend.ktandon2004.workers.dev/matches', {
                     method: 'GET',
@@ -31,7 +32,7 @@ const Messages = () => {
 
                 const data = await response.json();
                 setMatches(data.matches);
-                console.log("fetch matches: "+matches)
+                console.log("fetch matches: "+data.matches)
 
             } catch (error) {
                 console.error("Error fetching matches:", error);
@@ -54,7 +55,7 @@ const Messages = () => {
             }
             console.log(response)
             const data = await response.json();
-            console.log("fetchChat: "+data)
+            console.log("fetchChat: "+ data)
             setMessages(data.messages);
         } catch (error) {
             console.error("Error fetching chat messages:", error);
