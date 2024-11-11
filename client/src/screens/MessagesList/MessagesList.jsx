@@ -7,6 +7,7 @@ import "./Messages.css";
 
 const Messages = () => {
     const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedMatchId, setSelectedMatchId] = useState(null);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [matches, setMatches] = useState([]);
@@ -40,7 +41,6 @@ const Messages = () => {
 
             const data = await response.json();
             setMatches(data.matches);
-            console.log("fetch matches: " + JSON.stringify(data.matches));
         } catch (error) {
             console.error("Error fetching matches:", error);
             if (error.message === "Authentication credentials not found") {
@@ -64,7 +64,6 @@ const Messages = () => {
                 throw new Error("Failed to fetch chat messages");
             }
             const data = await response.json();
-            console.log("fetchChat: " + JSON.stringify(data));
             setMessages(data.messages);
         } catch (error) {
             console.error("Error fetching chat messages:", error);
@@ -77,43 +76,61 @@ const Messages = () => {
     // Handle user click to view chat messages
     const handleUserClick = async (user, matchId) => {
         setSelectedUser(user);
+        setSelectedMatchId(matchId); // Store the matchId
         await fetchChatMessages(matchId);
     };
 
+    // Get current match details
+    const getCurrentMatchDetails = () => {
+        if (!selectedMatchId) {
+            throw new Error("No match selected");
+        }
+        const match = matches.find(m => m.id === selectedMatchId);
+        if (!match) {
+            throw new Error("Match not found");
+        }
+        return match;
+    };
 
     // Send new message
     const handleSendMessage = async () => {
-        if (input.trim()) {
-            const matchId = selectedUser?.matchId;
-            console.log(selectedUserr)
-            try {
-                const { token, userId } = getCredentials();
-                const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ content: input }),
-                });
-                console.log("handelSend"+token)
-                console.log("handelSend"+matchId)
-                if (!response.ok) {
-                    throw new Error("Failed to send message");
-                }
+        if (!input.trim()) return;
+        
+        try {
+            // Ensure we have a selected match
+            if (!selectedMatchId) {
+                throw new Error("No match selected");
+            }
 
-                // Update messages after sending
-                setMessages([...messages, { 
-                    content: input, 
-                    senderId: userId, 
-                    timestamp: new Date().toLocaleTimeString() 
-                }]);
-                setInput("");
-            } catch (error) {
-                console.error("Error sending message:", error);
-                if (error.message === "Authentication credentials not found") {
-                    navigate('/login');
-                }
+            const { token, userId } = getCredentials();
+            const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${selectedMatchId}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'User-ID': userId,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: input }),
+            });
+            
+            if (!response.ok) {
+                throw new Error("Failed to send message");
+            }
+
+            // Update messages after sending
+            setMessages([...messages, { 
+                content: input, 
+                senderId: userId, 
+                timestamp: new Date().toLocaleTimeString() 
+            }]);
+            setInput("");
+        } catch (error) {
+            console.error("Error sending message:", error);
+            if (error.message === "Authentication credentials not found") {
+                navigate('/login');
+            } else if (error.message === "No match selected") {
+                console.error("Please select a conversation first");
+                // You might want to show this error to the user in the UI
             }
         }
     };
@@ -162,7 +179,7 @@ const Messages = () => {
                         {matches.map((match) => (
                             <div
                                 key={match.id}
-                                className={`user-card ${selectedUser && selectedUser.id === match.otherUser.id ? 'selected' : ''}`}
+                                className={`user-card ${selectedMatchId === match.id ? 'selected' : ''}`}
                                 onClick={() => handleUserClick(match.otherUser, match.id)}
                             >
                                 <div className="user-details">
