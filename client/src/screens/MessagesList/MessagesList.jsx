@@ -79,7 +79,7 @@ const Messages = () => {
                     },
                     body: JSON.stringify({ content: input }),
                 });
-                console.log(JSON.stringify(response))
+                console.log(JSON.stringify({content:input}))
 
                 if (!response.ok) {
                     throw new Error("Failed to send message");
