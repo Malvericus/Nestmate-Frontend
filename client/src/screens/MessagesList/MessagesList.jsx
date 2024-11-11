@@ -30,8 +30,9 @@ const Messages = () => {
                 }
 
                 const data = await response.json();
-                console.log("matches: "+data)
                 setMatches(data.matches);
+                console.log("fetch matches: "+matches)
+
             } catch (error) {
                 console.error("Error fetching matches:", error);
             }
@@ -53,7 +54,7 @@ const Messages = () => {
             }
             console.log(response)
             const data = await response.json();
-            console.log(data)
+            console.log("fetchChat: "+data)
             setMessages(data.messages);
         } catch (error) {
             console.error("Error fetching chat messages:", error);
