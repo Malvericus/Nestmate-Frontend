@@ -64,8 +64,41 @@ const Dashboard = () => {
     fetchRooms();
   }, []);
 
-  const handleDelete = (roomTitle) => {
-    setRooms(rooms.filter(room => room.title !== roomTitle));
+  const handleDelete = async (roomTitle) => {
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      console.error("Missing token");
+      return;
+    }
+  
+    // Find the room with the given title
+    const roomToDelete = rooms.find(room => room.title === roomTitle);
+  
+    if (!roomToDelete || !roomToDelete.id) {
+      console.error("Room not found or missing ID");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/rooms/${roomToDelete.id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+  
+      if (response.status === 200) {
+        // Remove the room from local state
+        setRooms(rooms.filter(room => room.id !== roomToDelete.id));
+        console.log("Room deleted successfully");
+      } else {
+        const errorData = await response.json();
+        console.error(`Failed to delete room: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("An error occurred while deleting the room:", error);
+    }
   };
 
   const handleEditClick = (room) => {
@@ -73,9 +106,52 @@ const Dashboard = () => {
     setShowEditModal(true);
   };
 
-  const handleEditSave = () => {
-    setRooms(rooms.map(room => room.title === editRoom.title ? editRoom : room));
-    setShowEditModal(false);
+  const handleEditSave = async () => {
+    const token = localStorage.getItem("token");
+  
+    if (!token || !editRoom || !editRoom.id) {
+      console.error("Missing token or room ID");
+      return;
+    }
+  
+    // Constructing the payload with the correct field names expected by the backend
+    const roomPayload = {
+      title: editRoom.title,
+      description: editRoom.description,
+      subLocality: editRoom.subLocality,
+      city: editRoom.city,
+      state: editRoom.state,
+      pincode: editRoom.pincode,
+      rent: editRoom.rent,
+      roomType: editRoom.roomType,
+      amenities: editRoom.amenities,
+      photosUrl: editRoom.photosUrl,
+      availableFrom: editRoom.availableFrom,
+    };
+  
+    try {
+      const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/rooms/${editRoom.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(roomPayload),
+      });
+  
+      if (response.ok) {
+        const updatedRoom = await response.json();
+  
+        // Update the room in the local state
+        setRooms(rooms.map(room => room.id === updatedRoom.id ? updatedRoom : room));
+        setShowEditModal(false); // Close the modal
+      } else {
+        const errorData = await response.json();
+        console.error(`Failed to save changes: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("An error occurred while saving changes:", error);
+    }
   };
 
   return (

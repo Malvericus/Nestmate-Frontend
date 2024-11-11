@@ -26,8 +26,52 @@ const UserProfile = () => {
     }));
   };
 
-  const handleSaveChanges = () => {
-    setShowModal(true); // Show the modal after saving changes
+  const handleSaveChanges = async () => {
+    // Construct the payload based on `updateUserSchema`
+    const userPayload = {
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      phone: userData.phone,
+      gender: userData.gender === 'any' ? 'other' : userData.gender,
+      dob: userData.dob,
+      profilePictureUrl: userData.profilePictureUrl,
+      socialMediaLinks: userData.socialMediaLinks,
+      preferences: {
+        ageRange: userData.ageRange,
+        smoker: userData.smoker,
+        pet: userData.pet,
+        rentRange: userData.rentRange,
+        roomType: userData.roomType,
+        location: userData.location,
+        occupancy: userData.occupancy
+      }
+    };
+    console.log(JSON.stringify(userPayload));
+  
+    try {
+      const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
+      console.log(userId);
+      console.log(token);
+      const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(userPayload),
+      });
+  
+      if (response.ok) {
+        setShowModal(true); // Show the modal after saving changes
+        // Save updated user data to localStorage
+        localStorage.setItem('userData', JSON.stringify(userData));
+      } else {
+        console.error('Failed to save changes');
+      }
+    } catch (error) {
+      console.error('An error occurred while saving changes:', error);
+    }
   };
 
   const closeModal = () => {
