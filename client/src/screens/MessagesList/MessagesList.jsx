@@ -95,7 +95,9 @@ const Messages = () => {
                     },
                     body: JSON.stringify({ content: input }),
                 });
-
+                console.log("handelSend"+token)
+                console.log("handelSend"+userId)
+                console.log("handelSend"+JSON.stringify(response))
                 if (!response.ok) {
                     throw new Error("Failed to send message");
                 }
