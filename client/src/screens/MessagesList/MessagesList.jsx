@@ -80,24 +80,24 @@ const Messages = () => {
         await fetchChatMessages(matchId);
     };
 
+
     // Send new message
     const handleSendMessage = async () => {
         if (input.trim()) {
             const matchId = selectedUser?.matchId;
+            console.log(selectedUserr)
             try {
                 const { token, userId } = getCredentials();
                 const response = await fetch(`https://nestmatebackend.ktandon2004.workers.dev/chats/${matchId}`, {
                     method: 'POST',
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        'User-ID': userId,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ content: input }),
                 });
                 console.log("handelSend"+token)
-                console.log("handelSend"+userId)
-                console.log("handelSend"+JSON.stringify(response))
+                console.log("handelSend"+matchId)
                 if (!response.ok) {
                     throw new Error("Failed to send message");
                 }
